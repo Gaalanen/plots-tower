@@ -41,6 +41,6 @@ export default async function handler(req, res) {
 
     res.status(200).json({ url: session.url });
   } catch (e) {
-    res.status(500).json({ error: 'checkout_failed', detail: String((e && e.message) || e), hasKey: !!process.env.STRIPE_SECRET_KEY, keyPrefix: (process.env.STRIPE_SECRET_KEY||'').slice(0,7) });
+    res.status(500).json({ error: 'checkout_failed' });
   }
 }
