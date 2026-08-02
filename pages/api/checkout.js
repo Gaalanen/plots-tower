@@ -1,7 +1,7 @@
 import Stripe from 'stripe';
 import { takenSet, saveOrder, PRICE_CENTS } from '../../lib/store';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2025-03-31.basil' });
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') { res.status(405).end(); return; }
