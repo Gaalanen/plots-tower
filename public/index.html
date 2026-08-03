@@ -333,7 +333,7 @@
         <span class="demo-badge">SANDBOX · NO REAL CHARGE</span>
         <div class="big">€<span id="co-total">0</span></div>
         <div class="rowln"><span><span id="co-n">0</span> × €19</span><b id="co-net">€0</b></div>
-        <div class="rowln"><span>VAT 25.5%</span><b id="co-vat">€0</b></div>
+        <div class="rowln" style="color:var(--muted)"><span>Tax</span><span>calculated at checkout</span></div>
       </div>
       <div class="co-mid">
         <label>Payment method</label>
@@ -371,7 +371,7 @@
 <script>
 (function(){
   "use strict";
-  const COLS=20, ROWS=30, PRICE=19, TOTAL=COLS*ROWS, VAT=0.255;
+  const COLS=20, ROWS=30, PRICE=19, TOTAL=COLS*ROWS;
   let store={}, selection=new Set(), draft=null, currentGross=0;
   const $=s=>document.querySelector(s);
   const gridEl=$('#grid'), floorsEl=$('#floors'), tip=$('#tip');
@@ -503,9 +503,9 @@
     if(!name){ flash($('#f-name'),'Add a business name'); return; }
     let url=$('#f-url').value.trim(); if(url&&!/^https?:\/\//i.test(url)) url='https://'+url;
     draft={ businessName:name, linkUrl:url, color:$('#f-color').value, mark:$('#f-mark').value.trim()||name.slice(0,1).toUpperCase(), tagline:$('#f-tag').value.trim() };
-    const n=selection.size; currentGross=n*PRICE; const net=currentGross/(1+VAT), vat=currentGross-net;
+    const n=selection.size; currentGross=n*PRICE;
     $('#co-total').textContent=currentGross.toLocaleString('fi-FI'); $('#co-n').textContent=n;
-    $('#co-net').textContent=eur(net); $('#co-vat').textContent=eur(vat);
+    $('#co-net').textContent=eur(currentGross);
     $('#payBtn').textContent='Pay €'+currentGross.toLocaleString('fi-FI');
     showPay();
   });
