@@ -25,6 +25,7 @@ export default async function handler(req, res) {
     const origin = req.headers.origin || ('https://' + req.headers.host);
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
+      automatic_tax: { enabled: true },
       line_items: [{
         price_data: {
           currency: 'eur',
@@ -41,6 +42,6 @@ export default async function handler(req, res) {
 
     res.status(200).json({ url: session.url });
   } catch (e) {
-    res.status(500).json({ error: 'checkout_failed' });
+    res.status(500).json({ error: 'checkout_failed', detail: String((e && e.message) || e) });
   }
 }
