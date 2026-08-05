@@ -235,12 +235,15 @@
     .moon{right:24px;top:22px;width:44px;height:44px}.nb{display:none}
     .side{display:none}
   }
+  .why{margin-top:16px;max-width:640px}
+  .why .scarce{font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--gold-soft);margin:0 0 8px;letter-spacing:.02em}
+  .why p{font-size:13px;color:var(--muted);line-height:1.6;margin:0}
 </style>
 
 <div class="wrap">
   <header>
     <div class="brand"><span class="mark">TWR</span>
-      <div><h1>Plots</h1><div class="sub">Lease a lit window in the tower</div></div>
+      <div><h1>Plots</h1><div class="sub">The tower is dark — anyone in the world can light a window</div></div>
     </div>
     <div class="stats">
       <div class="stat"><div class="n" id="s-claimed">0<small style="color:var(--muted);font-weight:400">/600</small></div><div class="l">Windows lit</div></div>
@@ -252,7 +255,7 @@
   <div class="banner" id="banner"></div>
 
   <div class="toolbar">
-    <div class="hint">Drag across dark windows to pick a block, then pay — your light comes on <b>instantly</b>. €19 per window.</div>
+    <div class="hint">Drag across dark windows to pick yours, then pay — your light comes on <b>instantly</b>. €19 once, and it never goes dark.</div>
     <div class="spacer"></div>
     <button class="ghost" id="refresh">Refresh tower</button>
     <button class="ghost" id="ownerBtn">Building management</button>
@@ -285,14 +288,21 @@
   <div class="legend">
     <span><i class="lc vac"></i> Vacant</span>
     <span><i class="lc sel"></i> Selected</span>
-    <span><i class="lc lit"></i> Leased &amp; lit</span>
+    <span><i class="lc lit"></i> Lit — forever</span>
     <span style="margin-left:auto">Tap a lit window to visit its site.</span>
   </div>
 
+  <div class="why">
+    <p class="scarce" id="s-dark">600 windows still dark. There will never be more than 600.</p>
+    <p>Every window belongs to someone real — a business, a project, a person who made something.
+       Pick yours, choose its colour, add your link. It lights the moment you pay, and it stays lit.
+       No rent, no renewals, no algorithm deciding who gets seen.</p>
+  </div>
+
   <footer>
-    The Tower is operated by <a href="https://www.gbsolutions.fi" target="_blank" rel="noopener">GB Solutions Oy</a>.
-    Pick your windows, pay, and your light comes on immediately — no waiting for approval.<br>
-    The tower is shared: everyone who opens this page sees the same lit windows.
+    One tower, one world — 600 windows, one payment, yours for good.<br>
+    The tower is shared: everyone who opens this page sees the same lit windows, wherever they are.<br>
+    Operated by <a href="https://www.gbsolutions.fi" target="_blank" rel="noopener">GB Solutions Oy</a>, Finland.
   </footer>
 </div>
 
@@ -410,7 +420,7 @@
     setTimeout(()=>gridEl.classList.remove('lit-in'), ROWS*22+700);
   }
 
-  function paint(id,justlit){
+  function pain4(id,justlit){
     const cell=cellMap.get(id); if(!cell) return;
     const rec=store[id];
     cell.classList.remove('selected','preview','reserved','leased');
@@ -437,6 +447,7 @@
     $('#s-claimed').innerHTML=claimed+'<small style="color:var(--muted);font-weight:400">/'+TOTAL+'</small>';
     $('#s-pct').textContent=Math.round(claimed/TOTAL*100)+'%';
     $('#s-value').textContent='€'+val.toLocaleString('fi-FI');
+    const dk=$('#s-dark'); if(dk) dk.textContent=(TOTAL-claimed)+' windows still dark. There will never be more than '+TOTAL+'.';
   }
 
   function showSheet(){ $('#sheet').classList.toggle('up', selection.size>0); }
