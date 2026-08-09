@@ -17,8 +17,8 @@
     /* materials */
     --deep:#04060E; --panel:rgba(9,14,32,.58); --panel-solid:#0A1024;
     --line:rgba(126,148,208,.14); --edge:rgba(150,170,225,.22); --edge-hi:rgba(180,198,245,.4);
-    /* stone / tower */
-    --stone:#20305F; --stone-lo:#16224A; --stone-hi:#2C3E77;
+    /* stone / tower — brighter, slightly warmer so the tower separates from the sky */
+    --stone:#2C3C68; --stone-lo:#1E2C55; --stone-hi:#3D5090;
     --glass:#243257; --glass-lo:#182446; --mullion:#0C1430;
     /* gold accent (restrained) */
     --gold:#E4BE6E; --gold-soft:#F6DCA0; --gold-deep:#A9853F; --beacon:#FF7A6B;
@@ -99,7 +99,7 @@
       radial-gradient(1.4px 1.4px at 67% 6%,rgba(246,220,160,.7),transparent)}
 
   .stage{position:absolute;left:50%;top:50%;width:2800px;height:1600px;margin:-800px 0 0 -1400px;
-    transform-origin:50% 50%;transform-style:preserve-3d;will-change:transform}
+    transform-origin:50% 50%;transform-style:flat;will-change:transform}
   /* the canvas city fills the stage and shares its transform (depth via atmospheric perspective) */
   #city{position:absolute;inset:0;z-index:2;width:2800px;height:1600px}
 
@@ -155,27 +155,32 @@
   .setback{width:30px;align-self:flex-end;background:linear-gradient(180deg,#1a2650,#111c3e);
     border:1px solid var(--edge);border-bottom:none;
     background-image:repeating-linear-gradient(180deg,rgba(147,207,255,.06) 0 1px,transparent 1px 12px)}
-  .setback.l2{height:118px;border-right:none;box-shadow:inset -8px 0 16px rgba(0,0,0,.5)}
-  .setback.r2{height:118px;border-left:none;box-shadow:inset 8px 0 16px rgba(0,0,0,.55);filter:brightness(.8)}
+  .setback.l2{height:118px;border-right:none;box-shadow:inset 2px 0 0 rgba(246,220,160,.28),inset -8px 0 16px rgba(0,0,0,.5)}
+  .setback.r2{height:118px;border-left:none;box-shadow:inset -2px 0 0 rgba(246,220,160,.2),inset 8px 0 16px rgba(0,0,0,.55);filter:brightness(.86)}
   .wing{width:64px;position:relative;background:linear-gradient(180deg,var(--stone),var(--stone-lo));
     border:1px solid var(--edge);border-bottom:none;
     background-image:
       repeating-linear-gradient(90deg,rgba(0,0,0,.4) 0 2px,rgba(246,220,160,.06) 2px 3px,transparent 3px 12px),
       repeating-linear-gradient(180deg,rgba(255,214,150,.12) 0 2px,transparent 2px 13px)}
-  .wing.l{height:170px;border-right:none;border-radius:2px 0 0 0}
-  .wing.r{height:170px;border-left:none;border-radius:0 2px 0 0;filter:brightness(.82)}
+  .wing.l{height:170px;border-right:none;border-radius:2px 0 0 0;
+    box-shadow:inset 2px 0 0 rgba(246,220,160,.34),inset 0 0 20px rgba(246,220,160,.06)}
+  .wing.r{height:170px;border-left:none;border-radius:0 2px 0 0;filter:brightness(.9);
+    box-shadow:inset -2px 0 0 rgba(246,220,160,.22),inset 0 0 20px rgba(246,220,160,.05)}
   .wing .cap{position:absolute;left:-1px;right:-1px;top:-14px;height:14px;
     background:linear-gradient(180deg,var(--stone-hi),var(--stone));border:1px solid var(--edge);border-bottom:none}
   /* main shaft frame (raised metallic) with projecting outer ribs */
-  .facade{position:relative;padding:16px 16px 18px;border:1px solid var(--edge);border-bottom:none;
+  .facade{position:relative;padding:16px 16px 18px;border:1px solid var(--edge-hi);border-bottom:none;
     background:
-      linear-gradient(100deg,rgba(200,215,255,.09),transparent 42%),
-      linear-gradient(180deg,#2a3a6b,#18244a);
-    box-shadow:0 50px 110px rgba(3,5,14,.75),inset 0 1px 0 rgba(255,255,255,.06)}
+      linear-gradient(100deg,rgba(255,236,200,.12),transparent 46%),
+      linear-gradient(180deg,#3b4c85,#26335f);
+    box-shadow:0 50px 110px rgba(3,5,14,.75),inset 0 1px 0 rgba(255,255,255,.08),
+      0 0 34px rgba(246,220,160,.10)}
   .facade::before{content:"";position:absolute;left:0;top:0;bottom:0;width:6px;z-index:3;
-    background:linear-gradient(90deg,rgba(246,220,160,.5),rgba(0,0,0,.4))}
+    background:linear-gradient(90deg,rgba(246,220,160,.62),rgba(0,0,0,.4));
+    box-shadow:0 0 12px rgba(246,220,160,.28)}
   .facade::after{content:"";position:absolute;right:0;top:0;bottom:0;width:6px;z-index:3;
-    background:linear-gradient(90deg,rgba(0,0,0,.5),rgba(246,220,160,.14))}
+    background:linear-gradient(90deg,rgba(0,0,0,.5),rgba(246,220,160,.3));
+    box-shadow:0 0 10px rgba(246,220,160,.16)}
   /* recessed window field: structural bays + spandrels behind the grid */
   .recess{position:relative;display:flex;gap:10px;padding:12px;
     --bayW:calc((var(--w) + var(--gx)) * 5);
@@ -183,7 +188,7 @@
       repeating-linear-gradient(90deg,rgba(0,0,0,.55) 0 2px,rgba(246,220,160,.05) 2px 3px,transparent 3px var(--bayW)),
       repeating-linear-gradient(90deg,rgba(255,255,255,.03) 0 1px,transparent 1px calc(var(--w) + var(--gx))),
       repeating-linear-gradient(180deg,rgba(0,0,0,.32) 0 2px,transparent 2px calc(var(--h) + var(--gy))),
-      linear-gradient(180deg,#0b1330,#060c20);
+      linear-gradient(180deg,#0e1636,#080e24);
     box-shadow:inset 0 0 46px rgba(0,0,0,.7),inset 0 3px 8px rgba(0,0,0,.6),
       inset 11px 0 22px rgba(0,0,0,.45),inset -11px 0 24px rgba(0,0,0,.55)}
   .floors{display:flex;flex-direction:column;gap:var(--gy);padding-top:1px}
@@ -200,6 +205,17 @@
   .win:hover{filter:brightness(1.7)}
   .win .u{font-family:'IBM Plex Mono',monospace;font-size:6px;color:#6B79A3;opacity:0;user-select:none;pointer-events:none;transition:opacity .2s}
   .win:hover .u{opacity:1}
+  /* decorative ambient light on a subset of UNCLAIMED windows — depth only.
+     Intentionally faint: no mark, no gold ring, no solid fill, so it never reads
+     as occupied (solid colour + mark) or as selected/available-highlight (gold). */
+  .win.deco-warm{background:
+      radial-gradient(130% 130% at 50% 34%,rgba(255,203,132,.24),rgba(255,203,132,.05) 56%,transparent 74%),
+      linear-gradient(180deg,#2c3559,#1b2545);
+    box-shadow:inset 0 0 5px rgba(255,190,120,.16),inset 0 1px 0 rgba(255,255,255,.05)}
+  .win.deco-cool{background:
+      radial-gradient(130% 130% at 50% 34%,rgba(150,196,255,.19),rgba(150,196,255,.04) 56%,transparent 74%),
+      linear-gradient(180deg,#26324f,#182240);
+    box-shadow:inset 0 0 5px rgba(140,180,255,.14),inset 0 1px 0 rgba(255,255,255,.05)}
   .win.preview,.win.selected{background:rgba(246,220,160,.4);border-color:var(--gold);
     box-shadow:inset 0 0 0 1px var(--gold),0 0 16px rgba(246,220,160,.7)}
   .win.selected .u{color:#fff;opacity:1}
@@ -221,8 +237,11 @@
     box-shadow:0 0 16px rgba(246,220,160,.7)}
 
   /* ---------- progressive detail on zoom ---------- */
-  .scene.zc-city .facade{filter:blur(.5px) brightness(.94)}
-  .scene.zc-city .recess{filter:saturate(.9)}
+  /* far views (initial hero): tower is the hero — lift it, ease back hero copy + UI a touch */
+  .scene.zc-city .facade,.scene.zc-tower .facade{filter:brightness(1.06) saturate(1.05)}
+  .scene.zc-city .recess,.scene.zc-tower .recess{filter:saturate(1.02)}
+  .scene.zc-city .hero,.scene.zc-tower .hero{opacity:.95}
+  .scene.zc-city .rail,.scene.zc-tower .rail{opacity:.9}
   .scene.zc-facade .floors .fl,.scene.zc-window .floors .fl{opacity:1}
   .scene.zc-window .win .u{opacity:.55}
   .scene.zc-window .win{box-shadow:inset 0 1px 0 rgba(255,255,255,.08),inset 0 0 0 1px rgba(120,140,190,.25)}
@@ -751,9 +770,10 @@
     cv.width=CW; cv.height=CH;
     g.clearRect(0,0,CW,CH);
     // sky
+    // sky stops mirror the .scene CSS background so any exposed canvas edge blends
     let sky=g.createLinearGradient(0,0,0,CH);
     sky.addColorStop(0,'#05070f'); sky.addColorStop(.42,'#0a1330'); sky.addColorStop(.66,'#132049');
-    sky.addColorStop(.80,'#1b2c5e'); sky.addColorStop(1,'#263c74');
+    sky.addColorStop(.80,'#1b2c5e'); sky.addColorStop(1,'#243a72');
     g.fillStyle=sky; g.fillRect(0,0,CW,CH);
     // stars
     seed=98765; g.save(); g.fillStyle='#fff';
@@ -783,6 +803,19 @@
     let fog=g.createLinearGradient(0,HORIZON-170,0,STREET+30);
     fog.addColorStop(0,'rgba(44,60,116,0)'); fog.addColorStop(.5,'rgba(48,66,124,.32)'); fog.addColorStop(1,'rgba(48,66,124,0)');
     g.fillStyle=fog; g.fillRect(0,HORIZON-170,CW,STREET-HORIZON+200);
+
+    // dark atmospheric pocket behind/beside the tower so its silhouette reads clearly
+    // (neutral dark radial → local brightness + apparent-saturation drop; fades out to keep the city on both sides)
+    g.save();
+    let pocket=g.createRadialGradient(CW/2,STREET-140,30,CW/2,STREET-140,780);
+    pocket.addColorStop(0,'rgba(6,9,20,.60)'); pocket.addColorStop(.55,'rgba(6,9,20,.32)'); pocket.addColorStop(1,'rgba(6,9,20,0)');
+    g.fillStyle=pocket; g.fillRect(CW/2-840,HORIZON-300,1680,960); g.restore();
+
+    // restrained warm haze anchoring the tower base into the city
+    g.save(); g.globalCompositeOperation='screen';
+    let anchor=g.createRadialGradient(CW/2,STREET+6,10,CW/2,STREET+6,540);
+    anchor.addColorStop(0,'rgba(246,206,140,.30)'); anchor.addColorStop(.5,'rgba(228,180,110,.12)'); anchor.addColorStop(1,'rgba(0,0,0,0)');
+    g.fillStyle=anchor; g.fillRect(CW/2-580,STREET-380,1160,800); g.restore();
   }
 
   function plane(g,c){
@@ -866,9 +899,24 @@
     grid.appendChild(frag);
   }
 
+  /* decorative ambient light: a fixed, deterministic ~15% of windows get a faint warm/cool
+     tint for depth. Purely cosmetic — no store/selection involvement. These windows stay
+     available and clickable; the tint is far dimmer than a selected (gold ring) or a leased
+     (solid colour + mark) window, and .selected/.preview fully override it (same property). */
+  function lightTower(){
+    let s=1337; const rand=()=>{ s=(s*1103515245+12345)&0x7fffffff; return s/0x7fffffff; };
+    for(let r=0;r<ROWS;r++){ for(let c=0;c<COLS;c++){
+      const cell=cells.get(pid(c,r)); if(!cell) continue;
+      if(rand()<0.15) cell.classList.add(rand()<.62?'deco-warm':'deco-cool');
+    }}
+  }
+
   /* ---------- zoom + pan + tilt ---------- */
-  const view={z:.5,x:0,y:0,tx:0,ty:0};
-  const MINZ=.28, MAXZ=2.6;
+  const view={z:.62,x:0,y:0,tx:0,ty:0};
+  let MINZ=.34; const MAXZ=2.6;
+  // smallest zoom at which the 2800×1600 canvas still fully covers the viewport → no visible edges
+  const coverMin=()=>Math.max(scene.clientWidth/CW, scene.clientHeight/CH);
+  function recalcMinZoom(){ MINZ=Math.max(.34,coverMin()); if(view.z<MINZ) view.z=MINZ; }
   let tiltOn=false;
 
   function apply(){
@@ -885,9 +933,11 @@
     clamp(); apply(); reflect();
   }
   function clamp(){
-    const lim=1000*view.z;
-    view.x=Math.max(-lim,Math.min(lim,view.x));
-    view.y=Math.max(-lim,Math.min(lim,view.y));
+    // limit pan so the scaled canvas can never uncover the viewport edges
+    const limX=Math.max(0, CW/2*view.z - scene.clientWidth/2);
+    const limY=Math.max(0, CH/2*view.z - scene.clientHeight/2);
+    view.x=Math.max(-limX,Math.min(limX,view.x));
+    view.y=Math.max(-limY,Math.min(limY,view.y));
   }
   function reflect(){
     const z=view.z, close=z>=.72, hero=$('#hero');
@@ -904,7 +954,13 @@
     view.z=z; view.x=x; view.y=y; clamp(); apply(); reflect();
     setTimeout(()=>stage.style.transition='',reduce?0:720);
   }
-  const cityView=()=>flyTo(.5,0,0);
+  const cityView=()=>{
+    const h=scene.getBoundingClientRect().height;
+    const z=Math.max(.62,coverMin());   // ~0.62; nudged up only if a very wide screen would expose canvas edges
+    // keep the spire tip ~82px below the top edge (clear of the nav); facade becomes the dominant mass
+    const y=82 - h/2 + (800-218)*z;
+    flyTo(z,0,y);
+  };
   const towerView=()=>{
     const r=scene.getBoundingClientRect();
     const z=Math.min(1.6,Math.max(1.0,(r.height*.8)/840));
@@ -1164,7 +1220,8 @@
   $('#langBtn').onclick=function(){ this.blur(); }; /* EN only for now; hook for future locales */
 
   /* ---------- boot ---------- */
-  buildTower(); drawScene(); apply(); reflect(); panel(); haze(); load();
+  buildTower(); lightTower(); drawScene(); recalcMinZoom(); cityView(); panel(); haze(); load();
+  addEventListener('resize',()=>{ recalcMinZoom(); clamp(); apply(); });
 
   const q=new URLSearchParams(location.search);
   if(q.get('paid')){
