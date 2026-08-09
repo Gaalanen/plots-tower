@@ -84,152 +84,148 @@
 
   /* ============ SCENE ============ */
   .scene{position:relative;height:100svh;min-height:600px;overflow:hidden;cursor:grab;touch-action:none;
-    perspective:1600px;perspective-origin:50% 42%;
-    background:
-      radial-gradient(120% 80% at 50% 118%,rgba(228,190,110,.10),transparent 52%),
-      radial-gradient(90% 60% at 50% 88%,rgba(58,86,150,.5),transparent 60%),
-      linear-gradient(180deg,var(--night-0) 0%,var(--night-1) 30%,var(--night-2) 55%,var(--horizon) 82%,var(--horizon-warm) 100%)}
+    perspective:1800px;perspective-origin:50% 46%;
+    background:linear-gradient(180deg,#05070f 0%,#0a1330 42%,#132049 66%,#1b2c5e 80%,#243a72 100%)}
   .scene.dragging{cursor:grabbing}
   .scene.tilt{cursor:default}
-  #haze{position:absolute;inset:0;z-index:9;pointer-events:none;mix-blend-mode:screen;opacity:.5}
-  .stars{position:absolute;inset:0 0 52% 0;z-index:1;pointer-events:none;opacity:.7;
+  #haze{position:absolute;inset:0;z-index:14;pointer-events:none;mix-blend-mode:screen;opacity:.45}
+  .stars{position:absolute;inset:0 0 60% 0;z-index:1;pointer-events:none;opacity:.6;
     background-image:
       radial-gradient(1px 1px at 12% 16%,rgba(255,255,255,.9),transparent),
       radial-gradient(1px 1px at 34% 8%,rgba(220,232,255,.8),transparent),
       radial-gradient(1px 1px at 58% 20%,rgba(255,255,255,.7),transparent),
       radial-gradient(1px 1px at 79% 11%,rgba(210,225,255,.85),transparent),
       radial-gradient(1px 1px at 88% 26%,rgba(255,255,255,.6),transparent),
-      radial-gradient(1px 1px at 22% 30%,rgba(255,255,255,.5),transparent),
-      radial-gradient(1.5px 1.5px at 67% 5%,rgba(246,220,160,.7),transparent)}
+      radial-gradient(1.4px 1.4px at 67% 6%,rgba(246,220,160,.7),transparent)}
 
   .stage{position:absolute;left:50%;top:50%;width:2800px;height:1600px;margin:-800px 0 0 -1400px;
     transform-origin:50% 50%;transform-style:preserve-3d;will-change:transform}
-  .layer{position:absolute;left:0;right:0;bottom:0;display:flex;align-items:flex-end;justify-content:center;
-    will-change:transform}
-  .layer.far{bottom:300px;filter:blur(2px) saturate(.7);opacity:.5;z-index:2}
-  .layer.mid{bottom:196px;filter:blur(.4px);opacity:.72;z-index:3}
-  .layer.near{bottom:0;z-index:12}
+  /* the canvas city fills the stage and shares its transform (depth via atmospheric perspective) */
+  #city{position:absolute;inset:0;z-index:2;width:2800px;height:1600px}
 
-  /* atmosphere */
-  .hband{position:absolute;left:0;right:0;bottom:250px;height:220px;z-index:6;pointer-events:none;
-    background:linear-gradient(180deg,transparent,rgba(51,71,127,.5) 60%,rgba(51,71,127,.62));filter:blur(2px)}
-  .glow{position:absolute;left:50%;bottom:150px;width:1400px;height:520px;margin-left:-700px;z-index:7;pointer-events:none;
-    background:radial-gradient(50% 62% at 50% 100%,rgba(228,190,110,.24),transparent 70%)}
-  .ground{position:absolute;left:0;right:0;bottom:0;height:250px;z-index:10;
-    background:linear-gradient(180deg,transparent,rgba(6,9,20,.7) 34%,#04060E 88%)}
-  /* street + reflections */
-  .street{position:absolute;left:0;right:0;bottom:0;height:200px;z-index:11;pointer-events:none;overflow:hidden}
-  .street .road{position:absolute;left:50%;bottom:0;width:2200px;margin-left:-1100px;height:200px;
-    background:
-      linear-gradient(180deg,transparent,rgba(10,16,38,.6) 55%,#060A16),
-      repeating-linear-gradient(90deg,transparent 0 78px,rgba(228,190,110,.05) 78px 80px)}
-  .street .reflect{position:absolute;left:50%;bottom:0;width:520px;margin-left:-260px;height:180px;
-    background:linear-gradient(180deg,rgba(228,190,110,.16),transparent 78%);filter:blur(7px);opacity:.7;
-    -webkit-mask-image:repeating-linear-gradient(180deg,#000 0 2px,transparent 2px 5px);
-    mask-image:repeating-linear-gradient(180deg,#000 0 2px,transparent 2px 5px)}
-  .street .streak{position:absolute;bottom:44px;height:2px;border-radius:2px;filter:blur(.4px);opacity:.8}
-
-  /* ============ TOWER (original Art-Deco) ============ */
-  .tower{position:absolute;left:50%;bottom:214px;transform:translateX(-50%);z-index:8;
+  /* ============ TOWER (original Art-Deco, architectural massing) ============ */
+  .tower{position:absolute;left:50%;bottom:206px;z-index:8;
+    transform:translateX(-50%) perspective(2200px) rotateX(2.4deg);transform-origin:50% 100%;
     display:flex;flex-direction:column;align-items:center;
-    filter:drop-shadow(0 40px 70px rgba(4,6,14,.8))}
+    filter:drop-shadow(0 46px 80px rgba(3,5,12,.85))}
   /* spire + beacon */
-  .spire{position:relative;width:60px;height:150px;display:flex;justify-content:center}
+  .spire{position:relative;width:64px;height:170px;display:flex;justify-content:center}
   .spire svg{overflow:visible}
   .beacon{position:absolute;top:-3px;left:50%;transform:translateX(-50%);width:6px;height:6px;border-radius:50%;
-    background:var(--beacon);box-shadow:0 0 14px 4px rgba(255,122,107,.9)}
+    background:var(--beacon);box-shadow:0 0 16px 5px rgba(255,122,107,.9)}
   @media (prefers-reduced-motion:no-preference){.beacon{animation:blink 3.4s ease-in-out infinite}}
   @keyframes blink{0%,100%{opacity:1}48%{opacity:.15}}
-  /* stepped Deco crown */
-  .crown{display:flex;flex-direction:column;align-items:center;margin-top:-6px}
+  /* stepped Deco crown — brighter near the top (lighting hierarchy) */
+  .crown{position:relative;display:flex;flex-direction:column;align-items:center;margin-top:-6px}
+  .crown::before{content:"";position:absolute;left:50%;top:-8px;transform:translateX(-50%);
+    width:280px;height:200px;z-index:-1;pointer-events:none;
+    background:radial-gradient(50% 58% at 50% 42%,rgba(246,220,160,.36),transparent 70%)}
   .crown .tier{background:linear-gradient(180deg,var(--stone-hi),var(--stone));position:relative;
-    border-top:1px solid rgba(228,190,110,.5);box-shadow:0 0 30px rgba(228,190,110,.28)}
+    border-top:1px solid rgba(246,220,160,.6);box-shadow:0 0 36px rgba(246,220,160,.42)}
   .crown .tier::before{content:"";position:absolute;inset:0;
-    background:repeating-linear-gradient(90deg,rgba(228,190,110,.42) 0 1.5px,transparent 1.5px 7px)}
-  .crown .t1{width:30px;height:20px}
-  .crown .t2{width:58px;height:22px}
-  .crown .t3{width:92px;height:24px}
-  .fins{width:120px;height:34px;display:flex;align-items:flex-end;justify-content:center;gap:3px}
+    background:repeating-linear-gradient(90deg,rgba(246,220,160,.5) 0 1.5px,transparent 1.5px 7px)}
+  .crown .t1{width:30px;height:22px}
+  .crown .t2{width:60px;height:24px}
+  .crown .t3{width:98px;height:26px}
+  .crown .t4{width:154px;height:22px;background:linear-gradient(180deg,#C9A96A,#6f5f3c)}
+  .fins{width:130px;height:38px;display:flex;align-items:flex-end;justify-content:center;gap:3px}
   .fins i{width:5px;background:linear-gradient(180deg,var(--gold-soft),var(--gold-deep));border-radius:2px 2px 0 0;
-    box-shadow:0 0 8px rgba(228,190,110,.55)}
-  .fins i:nth-child(1),.fins i:nth-child(9){height:14px}
-  .fins i:nth-child(2),.fins i:nth-child(8){height:20px}
-  .fins i:nth-child(3),.fins i:nth-child(7){height:26px}
-  .fins i:nth-child(4),.fins i:nth-child(6){height:31px}
-  .fins i:nth-child(5){height:34px}
+    box-shadow:0 0 10px rgba(246,220,160,.7)}
+  .fins i:nth-child(1),.fins i:nth-child(9){height:15px}
+  .fins i:nth-child(2),.fins i:nth-child(8){height:22px}
+  .fins i:nth-child(3),.fins i:nth-child(7){height:28px}
+  .fins i:nth-child(4),.fins i:nth-child(6){height:34px}
+  .fins i:nth-child(5){height:38px}
   /* sign */
   .sign{background:linear-gradient(180deg,#16204A,#0F1838);border:1px solid var(--edge);border-bottom:none;
-    padding:8px 30px 10px;box-shadow:0 -2px 40px rgba(228,190,110,.24)}
-  .sign span{font-family:'Marcellus',serif;letter-spacing:.5em;font-size:15px;
-    color:var(--gold-soft);text-shadow:0 0 16px rgba(228,190,110,.7);padding-left:.5em}
+    padding:9px 34px 11px;box-shadow:0 -2px 44px rgba(246,220,160,.3)}
+  .sign span{font-family:'Marcellus',serif;letter-spacing:.5em;font-size:16px;
+    color:var(--gold-soft);text-shadow:0 0 18px rgba(246,220,160,.8);padding-left:.5em}
   /* chevron crest band */
-  .crest{width:210px;height:26px;background:linear-gradient(180deg,var(--stone-hi),var(--stone-lo));
+  .crest{width:238px;height:28px;background:linear-gradient(180deg,var(--stone-hi),var(--stone-lo));
     border:1px solid var(--edge);border-bottom:none;position:relative;overflow:hidden}
   .crest::before{content:"";position:absolute;inset:0;
     background:
-      repeating-linear-gradient(90deg,transparent 0 16px,rgba(228,190,110,.32) 16px 17px 22px),
-      linear-gradient(135deg,transparent 46%,rgba(228,190,110,.28) 50%,transparent 54%)}
+      repeating-linear-gradient(90deg,transparent 0 16px,rgba(246,220,160,.34) 16px 17px 22px),
+      linear-gradient(135deg,transparent 46%,rgba(246,220,160,.3) 50%,transparent 54%)}
   .crest .chev{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
-    width:0;height:0;border:7px solid transparent;border-bottom-color:var(--gold);opacity:.9}
-  /* setback shoulders wrapping the shaft */
-  .shoulders{display:flex;align-items:flex-end}
-  .wing{width:58px;position:relative;background:linear-gradient(180deg,var(--stone),var(--stone-lo));
+    width:0;height:0;border:8px solid transparent;border-bottom-color:var(--gold);opacity:.9}
+  /* setback shoulders wrapping the shaft — two-step setbacks for real massing */
+  .shoulders{position:relative;display:flex;align-items:flex-end}
+  .setback{width:30px;align-self:flex-end;background:linear-gradient(180deg,#1a2650,#111c3e);
     border:1px solid var(--edge);border-bottom:none;
-    background-image:repeating-linear-gradient(180deg,rgba(147,207,255,.08) 0 1px,transparent 1px 11px)}
-  .wing::after{content:"";position:absolute;top:0;bottom:0;width:2px;background:rgba(228,190,110,.22)}
-  .wing.l{height:150px;border-right:none;border-radius:2px 0 0 0}
-  .wing.l::after{right:0}
-  .wing.r{height:150px;border-left:none;border-radius:0 2px 0 0}
-  .wing.r::after{left:0}
-  .wing .cap{position:absolute;left:-1px;right:-1px;top:-13px;height:13px;
+    background-image:repeating-linear-gradient(180deg,rgba(147,207,255,.06) 0 1px,transparent 1px 12px)}
+  .setback.l2{height:118px;border-right:none;box-shadow:inset -8px 0 16px rgba(0,0,0,.5)}
+  .setback.r2{height:118px;border-left:none;box-shadow:inset 8px 0 16px rgba(0,0,0,.55);filter:brightness(.8)}
+  .wing{width:64px;position:relative;background:linear-gradient(180deg,var(--stone),var(--stone-lo));
+    border:1px solid var(--edge);border-bottom:none;
+    background-image:
+      repeating-linear-gradient(90deg,rgba(0,0,0,.4) 0 2px,rgba(246,220,160,.06) 2px 3px,transparent 3px 12px),
+      repeating-linear-gradient(180deg,rgba(255,214,150,.12) 0 2px,transparent 2px 13px)}
+  .wing.l{height:170px;border-right:none;border-radius:2px 0 0 0}
+  .wing.r{height:170px;border-left:none;border-radius:0 2px 0 0;filter:brightness(.82)}
+  .wing .cap{position:absolute;left:-1px;right:-1px;top:-14px;height:14px;
     background:linear-gradient(180deg,var(--stone-hi),var(--stone));border:1px solid var(--edge);border-bottom:none}
-  /* main shaft: keeps #floors + #grid exactly */
-  .facade{position:relative;display:flex;gap:10px;padding:14px 14px 16px;
-    border:1px solid var(--edge);border-bottom:none;
+  /* main shaft frame (raised metallic) with projecting outer ribs */
+  .facade{position:relative;padding:16px 16px 18px;border:1px solid var(--edge);border-bottom:none;
     background:
-      linear-gradient(90deg,rgba(180,200,250,.10),transparent 8%,transparent 88%,rgba(0,0,0,.5)),
-      repeating-linear-gradient(90deg,rgba(228,190,110,.10) 0 1px,transparent 1px calc(var(--w) + var(--gx))),
-      linear-gradient(180deg,var(--stone),var(--stone-lo));
-    box-shadow:0 46px 100px rgba(4,6,16,.7),inset 0 0 60px rgba(4,6,20,.4)}
-  .facade::before{content:"";position:absolute;left:0;top:0;bottom:0;width:14px;
-    background:linear-gradient(90deg,rgba(228,190,110,.16),transparent)}
+      linear-gradient(100deg,rgba(200,215,255,.09),transparent 42%),
+      linear-gradient(180deg,#2a3a6b,#18244a);
+    box-shadow:0 50px 110px rgba(3,5,14,.75),inset 0 1px 0 rgba(255,255,255,.06)}
+  .facade::before{content:"";position:absolute;left:0;top:0;bottom:0;width:6px;z-index:3;
+    background:linear-gradient(90deg,rgba(246,220,160,.5),rgba(0,0,0,.4))}
+  .facade::after{content:"";position:absolute;right:0;top:0;bottom:0;width:6px;z-index:3;
+    background:linear-gradient(90deg,rgba(0,0,0,.5),rgba(246,220,160,.14))}
+  /* recessed window field: structural bays + spandrels behind the grid */
+  .recess{position:relative;display:flex;gap:10px;padding:12px;
+    --bayW:calc((var(--w) + var(--gx)) * 5);
+    background:
+      repeating-linear-gradient(90deg,rgba(0,0,0,.55) 0 2px,rgba(246,220,160,.05) 2px 3px,transparent 3px var(--bayW)),
+      repeating-linear-gradient(90deg,rgba(255,255,255,.03) 0 1px,transparent 1px calc(var(--w) + var(--gx))),
+      repeating-linear-gradient(180deg,rgba(0,0,0,.32) 0 2px,transparent 2px calc(var(--h) + var(--gy))),
+      linear-gradient(180deg,#0b1330,#060c20);
+    box-shadow:inset 0 0 46px rgba(0,0,0,.7),inset 0 3px 8px rgba(0,0,0,.6),
+      inset 11px 0 22px rgba(0,0,0,.45),inset -11px 0 24px rgba(0,0,0,.55)}
   .floors{display:flex;flex-direction:column;gap:var(--gy);padding-top:1px}
   .floors .fl{height:var(--h);display:flex;align-items:center;justify-content:flex-end;width:22px;padding-right:6px;
-    font-family:'IBM Plex Mono',monospace;font-size:7px;color:#4E5C86;letter-spacing:.02em}
+    font-family:'IBM Plex Mono',monospace;font-size:7px;color:#57648f;letter-spacing:.02em;opacity:0;transition:opacity .3s}
   .grid{display:flex;flex-direction:column;gap:var(--gy)}
   .floor{display:flex;gap:var(--gx)}
   .win{width:var(--w);height:var(--h);flex:0 0 auto;position:relative;cursor:pointer;border-radius:1px;
     background:
-      linear-gradient(160deg,rgba(190,214,255,.18),rgba(190,214,255,.03) 36%,transparent 62%),
+      linear-gradient(160deg,rgba(190,214,255,.16),rgba(190,214,255,.03) 36%,transparent 62%),
       linear-gradient(180deg,var(--glass),var(--glass-lo));
     border:1px solid var(--mullion);box-shadow:inset 0 1px 0 rgba(255,255,255,.05);
-    display:flex;align-items:center;justify-content:center;transition:filter .14s,box-shadow .14s,transform .1s}
-  .win:hover{filter:brightness(1.6)}
-  .win .u{font-family:'IBM Plex Mono',monospace;font-size:6px;color:#6B79A3;opacity:0;user-select:none;pointer-events:none}
+    display:flex;align-items:center;justify-content:center;transition:filter .14s,box-shadow .14s}
+  .win:hover{filter:brightness(1.7)}
+  .win .u{font-family:'IBM Plex Mono',monospace;font-size:6px;color:#6B79A3;opacity:0;user-select:none;pointer-events:none;transition:opacity .2s}
   .win:hover .u{opacity:1}
-  .win.preview,.win.selected{background:rgba(228,190,110,.36);border-color:var(--gold);
-    box-shadow:inset 0 0 0 1px var(--gold),0 0 14px rgba(228,190,110,.6)}
+  .win.preview,.win.selected{background:rgba(246,220,160,.4);border-color:var(--gold);
+    box-shadow:inset 0 0 0 1px var(--gold),0 0 16px rgba(246,220,160,.7)}
   .win.selected .u{color:#fff;opacity:1}
   .win.leased a,.win.leased .lease{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
     text-decoration:none;font-size:11px;line-height:1;border-radius:1px;
     background-image:linear-gradient(160deg,rgba(255,255,255,.5),rgba(255,255,255,.08) 46%,transparent 74%)}
   .curtain{position:absolute;inset:0;pointer-events:none;mix-blend-mode:screen;
     background:
-      radial-gradient(150px 110px at 82% 6%,rgba(246,220,160,.16),transparent 70%),
-      linear-gradient(115deg,transparent 34%,rgba(190,214,255,.08) 46%,transparent 56%)}
+      radial-gradient(180px 130px at 80% 4%,rgba(246,220,160,.14),transparent 70%),
+      linear-gradient(115deg,transparent 34%,rgba(190,214,255,.07) 46%,transparent 56%)}
   /* podium / lobby */
-  .podium{width:100%;height:64px;background:linear-gradient(180deg,#141D42,#0B1128);
+  .podium{width:calc(100% - 26px);height:74px;background:linear-gradient(180deg,#141D42,#0a0f26);
     border:1px solid var(--edge);border-bottom:none;position:relative}
-  .podium::before{content:"";position:absolute;left:0;right:0;top:0;height:2px;background:rgba(228,190,110,.3)}
-  .podium .col{position:absolute;top:8px;bottom:0;width:6px;background:linear-gradient(180deg,var(--stone-hi),var(--stone-lo))}
-  .podium .lobby{position:absolute;left:0;right:0;bottom:0;height:26px;display:flex;gap:5px;
+  .podium::before{content:"";position:absolute;left:0;right:0;top:0;height:2px;background:rgba(246,220,160,.34)}
+  .podium .col{position:absolute;top:10px;bottom:0;width:7px;background:linear-gradient(180deg,var(--stone-hi),var(--stone-lo))}
+  .podium .lobby{position:absolute;left:0;right:0;bottom:0;height:30px;display:flex;gap:6px;
     justify-content:center;align-items:flex-end}
-  .podium .lobby i{width:10px;height:20px;background:linear-gradient(180deg,#FFE7B4,#D9AE5E);
-    box-shadow:0 0 14px rgba(228,190,110,.6)}
-  /* tower base reflection on street */
-  .tower-mirror{position:absolute;left:50%;bottom:74px;transform:translateX(-50%) scaleY(-1);z-index:7;
-    opacity:.14;filter:blur(3px);pointer-events:none;-webkit-mask-image:linear-gradient(180deg,#000,transparent 60%);
-    mask-image:linear-gradient(180deg,#000,transparent 60%)}
+  .podium .lobby i{width:11px;height:24px;background:linear-gradient(180deg,#FFE7B4,#D9AE5E);
+    box-shadow:0 0 16px rgba(246,220,160,.7)}
+
+  /* ---------- progressive detail on zoom ---------- */
+  .scene.zc-city .facade{filter:blur(.5px) brightness(.94)}
+  .scene.zc-city .recess{filter:saturate(.9)}
+  .scene.zc-facade .floors .fl,.scene.zc-window .floors .fl{opacity:1}
+  .scene.zc-window .win .u{opacity:.55}
+  .scene.zc-window .win{box-shadow:inset 0 1px 0 rgba(255,255,255,.08),inset 0 0 0 1px rgba(120,140,190,.25)}
 
   /* ============ OVERLAY UI (frames the scene) ============ */
   .overlay{position:absolute;inset:0;z-index:30;pointer-events:none}
@@ -473,22 +469,19 @@
   <div class="stars"></div>
 
   <div class="stage" id="stage">
-    <div class="layer far" id="l-far"></div>
-    <div class="layer mid" id="l-mid"></div>
-
-    <div class="hband"></div>
+    <canvas id="city" width="2800" height="1600"></canvas>
 
     <div class="tower" id="tower">
       <div class="spire">
         <span class="beacon"></span>
-        <svg width="30" height="150" viewBox="0 0 30 150" fill="none" aria-hidden="true">
+        <svg width="34" height="170" viewBox="0 0 34 170" fill="none" aria-hidden="true">
           <defs>
             <linearGradient id="sp" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0" stop-color="#F6DCA0"/><stop offset="1" stop-color="#A9853F"/>
             </linearGradient>
           </defs>
-          <path d="M15 0 L18 74 L15 150 L12 74 Z" fill="url(#sp)"/>
-          <path d="M15 40 L23 96 L15 150 L7 96 Z" fill="url(#sp)" opacity=".55"/>
+          <path d="M17 0 L20 84 L17 170 L14 84 Z" fill="url(#sp)"/>
+          <path d="M17 46 L26 110 L17 170 L8 110 Z" fill="url(#sp)" opacity=".5"/>
         </svg>
       </div>
       <div class="crown">
@@ -496,33 +489,30 @@
         <div class="tier t2"></div>
         <div class="fins"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
         <div class="tier t3"></div>
+        <div class="tier t4"></div>
       </div>
       <div class="sign"><span>PLOTS</span></div>
       <div class="crest"><span class="chev"></span></div>
       <div class="shoulders">
+        <div class="setback l2"></div>
         <div class="wing l"><span class="cap"></span></div>
         <div class="facade">
-          <div class="floors" id="floors"></div>
-          <div class="grid" id="grid"></div>
-          <div class="curtain"></div>
+          <div class="recess">
+            <div class="floors" id="floors"></div>
+            <div class="grid" id="grid"></div>
+            <div class="curtain"></div>
+          </div>
         </div>
         <div class="wing r"><span class="cap"></span></div>
+        <div class="setback r2"></div>
       </div>
       <div class="podium">
-        <span class="col" style="left:14%"></span><span class="col" style="left:34%"></span>
-        <span class="col" style="left:54%"></span><span class="col" style="left:74%"></span>
-        <div class="lobby"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        <span class="col" style="left:12%"></span><span class="col" style="left:31%"></span>
+        <span class="col" style="left:50%"></span><span class="col" style="left:69%"></span>
+        <span class="col" style="left:88%"></span>
+        <div class="lobby"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
       </div>
     </div>
-
-    <div class="glow"></div>
-    <div class="layer near" id="l-near"></div>
-
-    <div class="street">
-      <div class="road"></div>
-      <div class="reflect"></div>
-    </div>
-    <div class="ground"></div>
   </div>
 
   <!-- overlay UI frames the scene -->
@@ -749,33 +739,110 @@
   const pid=(c,r)=>r+'-'+c, floorOf=r=>ROWS-r, unitOf=c=>String(c+1).padStart(2,'0');
   const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
 
-  /* ---------- deterministic skyline ---------- */
+  /* ---------- deterministic noise ---------- */
   let seed=20260808;
   const rnd=()=>{ seed=(seed*1664525+1013904223)%4294967296; return seed/4294967296; };
 
-  function makeSkyline(el,count,opts){
-    let html='';
-    for(let i=0;i<count;i++){
-      const w=opts.minW+Math.floor(rnd()*(opts.maxW-opts.minW));
-      const h=opts.minH+Math.floor(rnd()*(opts.maxH-opts.minH));
-      const lit=opts.lit*rnd();
-      const roof=rnd(); // vary rooflines for an original skyline
-      const top=roof>.82?`clip-path:polygon(0 8%,50% 0,100% 8%,100% 100%,0 100%);`
-               :roof>.62?`border-radius:3px 3px 0 0;`:``;
-      const antenna=roof>.9?`<span style="position:absolute;top:-16px;left:50%;width:1px;height:16px;background:rgba(228,190,110,.5)"></span>`:'';
-      const body=opts.dark?`linear-gradient(180deg,#0F1734,#070C20)`
-                          :`linear-gradient(180deg,${opts.top},${opts.bottom})`;
-      const wins=`repeating-linear-gradient(180deg,rgba(255,214,150,${lit.toFixed(2)}) 0 2px,transparent 2px 8px),`
-                +`repeating-linear-gradient(90deg,rgba(160,190,255,${(lit*.7).toFixed(2)}) 0 2px,transparent 2px 7px)`;
-      html+=`<div style="position:relative;flex:0 0 auto;width:${w}px;height:${h}px;margin:0 ${opts.gap}px;`
-           +`background:${wins},${body};border-top:1px solid rgba(147,207,255,.06);${top}">${antenna}</div>`;
-    }
-    el.innerHTML=html;
+  /* ---------- cinematic canvas city (atmospheric perspective + bloom + reflections) ---------- */
+  const CW=2800, CH=1600, HORIZON=1140, STREET=1330;
+  function drawScene(){
+    const cv=$('#city'); if(!cv) return;
+    const g=cv.getContext('2d'); if(!g){ cv.style.display='none'; return; }
+    cv.width=CW; cv.height=CH;
+    g.clearRect(0,0,CW,CH);
+    // sky
+    let sky=g.createLinearGradient(0,0,0,CH);
+    sky.addColorStop(0,'#05070f'); sky.addColorStop(.42,'#0a1330'); sky.addColorStop(.66,'#132049');
+    sky.addColorStop(.80,'#1b2c5e'); sky.addColorStop(1,'#263c74');
+    g.fillStyle=sky; g.fillRect(0,0,CW,CH);
+    // stars
+    seed=98765; g.save(); g.fillStyle='#fff';
+    for(let i=0;i<130;i++){ g.globalAlpha=rnd()*.7; g.fillRect(rnd()*CW, rnd()*HORIZON*0.72, rnd()<.12?1.7:1, 1); }
+    g.restore();
+    // horizon warm glow behind the tower
+    g.save(); g.globalCompositeOperation='screen';
+    let gl=g.createRadialGradient(CW/2,HORIZON+30,0,CW/2,HORIZON+30,1000);
+    gl.addColorStop(0,'rgba(228,190,110,.24)'); gl.addColorStop(.45,'rgba(120,130,190,.12)'); gl.addColorStop(1,'rgba(0,0,0,0)');
+    g.fillStyle=gl; g.fillRect(0,HORIZON-560,CW,1000); g.restore();
+
+    // depth planes far -> near (scale/blur/contrast falloff = atmospheric perspective)
+    plane(g,{seed:1111, base:HORIZON+18, wMin:26,wMax:70, hMin:60,hMax:250, adv0:.72,adv1:1.02,
+      top:'#2a3d70',bot:'#1b2c56', litP:.20, warm:.5, alpha:.60, blur:2.4, cw:3, gap:6, dim:.55});
+    plane(g,{seed:2222, base:STREET-26, wMin:44,wMax:118, hMin:120,hMax:430, adv0:.62,adv1:.96,
+      top:'#1e3060',bot:'#111f44', litP:.34, warm:.55, alpha:.94, blur:.5, cw:3, gap:7, dim:.9});
+    plane(g,{seed:3333, base:STREET+56, wMin:82,wMax:200, hMin:150,hMax:520, adv0:.55,adv1:.9,
+      top:'#101a3c',bot:'#070e26', litP:.24, warm:.6, alpha:1, blur:0, cw:4, gap:9, dim:1});
+
+    ground(g);
+
+    // foreground framing masses (soft-focus silhouettes flanking the tower)
+    plane(g,{seed:4444, n:8, base:CH+40, wMin:190,wMax:430, hMin:280,hMax:600, adv0:.5,adv1:.8,
+      top:'#0a1128',bot:'#04060f', litP:.07, warm:.7, alpha:1, blur:1.5, cw:5, gap:12, dim:1, edges:true});
+
+    // atmospheric fog band separating city from horizon
+    let fog=g.createLinearGradient(0,HORIZON-170,0,STREET+30);
+    fog.addColorStop(0,'rgba(44,60,116,0)'); fog.addColorStop(.5,'rgba(48,66,124,.32)'); fog.addColorStop(1,'rgba(48,66,124,0)');
+    g.fillStyle=fog; g.fillRect(0,HORIZON-170,CW,STREET-HORIZON+200);
   }
-  function buildCity(){
-    makeSkyline($('#l-far'),40,{minW:30,maxW:78,minH:110,maxH:340,gap:2,lit:.2,top:'#2A3B72',bottom:'#1B2854'});
-    makeSkyline($('#l-mid'),30,{minW:46,maxW:112,minH:150,maxH:470,gap:3,lit:.38,top:'#22315F',bottom:'#141F45'});
-    makeSkyline($('#l-near'),16,{minW:96,maxW:200,minH:170,maxH:360,gap:5,lit:.5,dark:true});
+
+  function plane(g,c){
+    const body=document.createElement('canvas'); body.width=CW; body.height=CH; const o=body.getContext('2d');
+    const lit=document.createElement('canvas'); lit.width=CW; lit.height=CH; const lo=lit.getContext('2d');
+    seed=c.seed; let x=-90; const count=c.n||999;
+    for(let i=0;i<count;i++){
+      const w=c.wMin+rnd()*(c.wMax-c.wMin), h=c.hMin+rnd()*(c.hMax-c.hMin);
+      let bx;
+      if(c.edges){ bx = rnd()<.5 ? (rnd()*CW*0.26 - w*0.35) : (CW*0.74 + rnd()*CW*0.26 - w*0.5); }
+      else { bx=x; x += w*(c.adv0+rnd()*(c.adv1-c.adv0)); if(x>CW+120) break; }
+      const by=c.base-h;
+      const grd=o.createLinearGradient(0,by,0,c.base);
+      grd.addColorStop(0,c.top); grd.addColorStop(1,c.bot);
+      o.fillStyle=grd; o.fillRect(bx,by,w,h);
+      const rf=rnd();
+      if(rf>.88){ o.beginPath(); o.moveTo(bx,by); o.lineTo(bx+w/2,by-Math.min(34,h*.14)); o.lineTo(bx+w,by); o.closePath(); o.fill(); }
+      else if(rf>.72){ o.fillRect(bx+w*.32,by-9,w*.36,9); }
+      if(rf>.94){ lo.fillStyle='rgba(255,120,110,.9)'; lo.fillRect(bx+w/2-1,by-24,2,2); }
+      const cw=c.cw, gap=c.gap, step=cw+gap, m=Math.max(3,cw);
+      for(let wy=by+m; wy<by+h-m; wy+=step+1){
+        for(let wx=bx+m; wx<bx+w-m; wx+=step){
+          if(rnd()>c.litP) continue;
+          const a=(0.45+rnd()*0.55)*c.dim, t=rnd();
+          let col = t<.06 ? `rgba(255,255,236,${a})`
+                  : t<.06+c.warm ? `rgba(255,208,138,${a})`
+                  : `rgba(150,190,255,${a*0.9})`;
+          lo.fillStyle=col; lo.fillRect(wx,wy,cw,cw+1);
+        }
+      }
+    }
+    g.save(); if(c.blur) g.filter=`blur(${c.blur}px)`; g.globalAlpha=c.alpha; g.drawImage(body,0,0); g.restore();
+    g.save(); g.globalCompositeOperation='lighter'; g.globalAlpha=Math.min(1,c.alpha+.08);
+    if(c.blur) g.filter=`blur(${(c.blur*0.55).toFixed(2)}px)`; g.drawImage(lit,0,0); g.restore();
+    g.save(); g.globalCompositeOperation='screen'; g.globalAlpha=.5*c.dim; g.filter='blur(7px)'; g.drawImage(lit,0,0); g.restore();
+  }
+
+  function ground(g){
+    let as=g.createLinearGradient(0,HORIZON,0,CH);
+    as.addColorStop(0,'rgba(9,14,34,0)'); as.addColorStop(.22,'rgba(7,11,28,.75)'); as.addColorStop(1,'#04060f');
+    g.fillStyle=as; g.fillRect(0,HORIZON,CW,CH-HORIZON);
+    // perspective road lines converging to the vanishing point at the tower base
+    g.save(); g.globalCompositeOperation='screen'; g.strokeStyle='rgba(228,190,110,.05)'; g.lineWidth=2;
+    for(let i=-7;i<=7;i++){ g.beginPath(); g.moveTo(CW/2,HORIZON); g.lineTo(CW/2+i*200,CH); g.stroke(); }
+    g.restore();
+    // vertical light-streak reflections on the wet street
+    g.save(); g.globalCompositeOperation='screen'; seed=5550;
+    for(let i=0;i<46;i++){
+      const x=rnd()*CW, w=2+rnd()*7, len=34+rnd()*150, warm=rnd()<.6, a=.05+rnd()*.13;
+      const col = warm?`rgba(246,220,160,${a})`:`rgba(150,190,255,${a})`;
+      const grd=g.createLinearGradient(0,STREET,0,STREET+len);
+      grd.addColorStop(0,col); grd.addColorStop(1,'rgba(0,0,0,0)');
+      g.filter='blur(2px)'; g.fillStyle=grd; g.fillRect(x-w/2,STREET,w,len);
+    }
+    g.restore();
+    // gold reflection pool under the tower
+    g.save(); g.globalCompositeOperation='screen';
+    let pool=g.createLinearGradient(0,STREET,0,STREET+220);
+    pool.addColorStop(0,'rgba(228,190,110,.14)'); pool.addColorStop(1,'rgba(0,0,0,0)');
+    g.filter='blur(6px)'; g.fillStyle=pool; g.fillRect(CW/2-160,STREET,320,220); g.restore();
   }
 
   /* ---------- tower windows (UNCHANGED structure) ---------- */
@@ -800,19 +867,13 @@
   }
 
   /* ---------- zoom + pan + tilt ---------- */
-  const view={z:.4,x:0,y:0,tx:0,ty:0};
+  const view={z:.5,x:0,y:0,tx:0,ty:0};
   const MINZ=.28, MAXZ=2.6;
-  const layFar=$('#l-far'), layMid=$('#l-mid'), layNear=$('#l-near');
   let tiltOn=false;
 
   function apply(){
     stage.style.transform=
       `translate(${view.x}px,${view.y}px) scale(${view.z}) rotateX(${view.ty}deg) rotateY(${view.tx}deg)`;
-    /* cheap depth parallax on pan (relative to stage) */
-    const k=1/Math.max(view.z,.4);
-    layFar.style.transform =`translateX(${-view.x*0.05*k}px)`;
-    layMid.style.transform =`translateX(${-view.x*0.025*k}px)`;
-    layNear.style.transform=`translateX(${ view.x*0.03*k}px)`;
   }
   function setZoom(z,cx,cy){
     z=Math.max(MINZ,Math.min(MAXZ,z));
@@ -829,10 +890,12 @@
     view.y=Math.max(-lim,Math.min(lim,view.y));
   }
   function reflect(){
-    const hero=$('#hero'), close=view.z>=.72;
+    const z=view.z, close=z>=.72, hero=$('#hero');
     hero.classList.toggle('dim',close);
-    const hint=$('#hint');
-    hint.textContent = close
+    const sc=scene.classList;
+    sc.remove('zc-city','zc-tower','zc-facade','zc-window');
+    sc.add(z<.6?'zc-city':z<1.05?'zc-tower':z<1.7?'zc-facade':'zc-window');
+    $('#hint').textContent = close
       ? 'Click a window to claim it · drag across several for a block'
       : 'Scroll to zoom · drag to look around';
   }
@@ -841,7 +904,7 @@
     view.z=z; view.x=x; view.y=y; clamp(); apply(); reflect();
     setTimeout(()=>stage.style.transition='',reduce?0:720);
   }
-  const cityView=()=>flyTo(.4,0,0);
+  const cityView=()=>flyTo(.5,0,0);
   const towerView=()=>{
     const r=scene.getBoundingClientRect();
     const z=Math.min(1.6,Math.max(1.0,(r.height*.8)/840));
@@ -1072,17 +1135,7 @@
     clearTimeout(te._t); te._t=setTimeout(()=>{ te.style.opacity='0'; te.style.transform='translateX(-50%) translateY(20px)'; },3400);
   }
 
-  /* street light streaks */
-  function buildStreaks(){
-    const road=$('.street .road'); if(!road) return;
-    const cols=['rgba(246,220,160,.8)','rgba(147,207,255,.7)','rgba(255,140,120,.6)'];
-    let h='';
-    for(let i=0;i<9;i++){
-      const left=6+i*10+rnd()*4, w=60+rnd()*140, col=cols[Math.floor(rnd()*cols.length)];
-      h+=`<span class="streak" style="left:${left}%;width:${w}px;background:linear-gradient(90deg,transparent,${col},transparent)"></span>`;
-    }
-    $('.street').insertAdjacentHTML('beforeend',h);
-  }
+  /* (the whole city is painted on the #city canvas — see drawScene) */
 
   /* lightweight haze canvas — degrades off on reduced-motion / small screens */
   function haze(){
@@ -1111,7 +1164,7 @@
   $('#langBtn').onclick=function(){ this.blur(); }; /* EN only for now; hook for future locales */
 
   /* ---------- boot ---------- */
-  buildCity(); buildTower(); buildStreaks(); apply(); reflect(); panel(); haze(); load();
+  buildTower(); drawScene(); apply(); reflect(); panel(); haze(); load();
 
   const q=new URLSearchParams(location.search);
   if(q.get('paid')){
