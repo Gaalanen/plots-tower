@@ -30,7 +30,7 @@ export default async function handler(req, res) {
         price_data: {
           currency: 'eur',
           unit_amount: PRICE_CENTS,
-          product_data: { name: 'Tower window (Plots)', tax_code: 'txcd_10000000' }
+          product_data: { name: 'Lumora Tower window', tax_code: 'txcd_10000000' }
         },
         quantity: keys.length
       }],
