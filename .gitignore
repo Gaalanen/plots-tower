@@ -1,0 +1,17 @@
+# dependencies
+/node_modules
+
+# next.js build output
+/.next
+/out
+
+# local env files
+.env
+.env*.local
+
+# npm lockfile (not tracked by this project)
+package-lock.json
+
+# logs / os
+*.log
+.DS_Store
