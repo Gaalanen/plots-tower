@@ -220,14 +220,19 @@
         const ang = R() * Math.PI * 2, dist = 1010 + R() * 420;
         place(ang, dist, 28 + R() * 52, 28 + R() * 52, 70 + R() * 170);
       }
+      // low-rise carpet filling the foreground around the tower's feet (short → never blocks it)
+      for (let i = 0; i < 96; i++) {
+        const ang = R() * Math.PI * 2, dist = 128 + R() * 196;
+        place(ang, dist, 14 + R() * 30, 14 + R() * 30, 9 + R() * 32);
+      }
     })();
 
     // ---- road light-trails on the water/ground (city traffic from above) ----
     (function roadLights() {
       const g = new THREE.Group(); scene.add(g);
       let s = 9091; const R = () => { s = (s * 1103515245 + 12345) & 0x7fffffff; return s / 0x7fffffff; };
-      for (let i = 0; i < 72; i++) {
-        const ang = R() * Math.PI * 2, dist = 190 + R() * 640, len = 8 + R() * 48;
+      for (let i = 0; i < 115; i++) {
+        const ang = R() * Math.PI * 2, dist = 130 + R() * 700, len = 8 + R() * 48;
         const col = R() < 0.6 ? 0xffcf9a : 0xff5a4d;   // headlights warm / taillights red
         const m = new THREE.Mesh(new THREE.BoxGeometry(len, 0.5, 1.0 + R() * 1.3),
           new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false }));
