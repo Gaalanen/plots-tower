@@ -745,6 +745,13 @@
 </div>
 
 <script src="/vendor/three.min.js"></script>
+<script src="/vendor/pp/CopyShader.js"></script>
+<script src="/vendor/pp/LuminosityHighPassShader.js"></script>
+<script src="/vendor/pp/EffectComposer.js"></script>
+<script src="/vendor/pp/RenderPass.js"></script>
+<script src="/vendor/pp/ShaderPass.js"></script>
+<script src="/vendor/pp/MaskPass.js"></script>
+<script src="/vendor/pp/UnrealBloomPass.js"></script>
 <script src="/tower3d.js"></script>
 <script>
 (function(){
@@ -1240,7 +1247,7 @@
 
   /* client-only sample windows so occupancy is visible without the live backend */
   function seedDemo(){
-    const colors=['#7FD3FF','#FFB84D','#FF6B9D','#8AE06A','#C792FF','#FF5A4D','#FFD166','#4DD0E1'];
+    const colors=['#FFD9A0','#FFC877','#FFB24D','#FFE3B0','#F6C96A','#FFCF8A','#FFBE63','#9FC2FF'];
     const marks=['★','A','♥','9','◆','M','☎','λ','7','✦','B','€'];
     let s=424242; const R=()=>{ s=(s*1103515245+12345)&0x7fffffff; return s/0x7fffffff; };
     store={}; const used=new Set();

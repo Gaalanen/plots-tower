@@ -64,6 +64,15 @@
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(42, 1, 0.5, 6000);
 
+    // optional cinematic bloom (loaded via vendored postprocessing modules)
+    let composer = null, bloomPass = null;
+    if (THREE.EffectComposer && THREE.RenderPass && THREE.UnrealBloomPass) {
+      composer = new THREE.EffectComposer(renderer);
+      composer.addPass(new THREE.RenderPass(scene, camera));
+      bloomPass = new THREE.UnrealBloomPass(new THREE.Vector2(1, 1), 0.42, 0.5, 0.88); // strength, radius, threshold
+      composer.addPass(bloomPass);
+    }
+
     // ---- orbit state ----
     const target = new THREE.Vector3(0, 108, 0);
     const orbit = { radius: 300, theta: -0.6, phi: 1.38 };   // 3/4, slightly above — depth + setbacks read
@@ -90,8 +99,9 @@
     // ---- sky + environment ----
     const pmrem = new THREE.PMREMGenerator(renderer); pmrem.compileEquirectangularShader();
     function skyTexture() {
-      const c = document.createElement('canvas'); c.width = 16; c.height = 256;
-      const g = c.getContext('2d'); const grd = g.createLinearGradient(0, 0, 0, 256);
+      const W = 1024, H = 512;
+      const c = document.createElement('canvas'); c.width = W; c.height = H;
+      const g = c.getContext('2d'); const grd = g.createLinearGradient(0, 0, 0, H);
       grd.addColorStop(0.00, '#17264f');   // deep blue zenith
       grd.addColorStop(0.26, '#33457a');   // blue
       grd.addColorStop(0.40, '#6d6498');   // lavender
@@ -101,7 +111,28 @@
       grd.addColorStop(0.545, '#13223f');  // water line
       grd.addColorStop(0.72, '#0c1930');
       grd.addColorStop(1.00, '#0a1526');   // far water
-      g.fillStyle = grd; g.fillRect(0, 0, 16, 256);
+      g.fillStyle = grd; g.fillRect(0, 0, W, H);
+      // streaky sunset clouds, concentrated just above the horizon (warm below → mauve above)
+      const horizon = H * 0.525, zone = H * 0.34;
+      let s = 1234567; const R = () => { s = (s * 1103515245 + 12345) & 0x7fffffff; return s / 0x7fffffff; };
+      for (let i = 0; i < 150; i++) {
+        const k = Math.pow(R(), 1.7);                 // bias toward horizon
+        const y = horizon - 5 - k * zone, x = R() * W, len = W * (0.12 + R() * 0.52), th = 2 + R() * 7;
+        const warm = [255, 150, 92], cool = [168, 132, 170];
+        const cr = Math.round(warm[0] + (cool[0] - warm[0]) * k), cg = Math.round(warm[1] + (cool[1] - warm[1]) * k), cb = Math.round(warm[2] + (cool[2] - warm[2]) * k);
+        const a = (0.05 + R() * 0.17) * (1 - 0.35 * k);
+        g.save(); g.globalCompositeOperation = 'lighter';
+        const lg = g.createLinearGradient(x, y - th, x, y + th);
+        lg.addColorStop(0, `rgba(${cr},${cg},${cb},0)`);
+        lg.addColorStop(0.5, `rgba(${cr},${cg},${cb},${a.toFixed(3)})`);
+        lg.addColorStop(1, `rgba(${cr},${cg},${cb},0)`);
+        g.fillStyle = lg; g.beginPath(); g.ellipse(x, y, len / 2, th, 0, 0, 7); g.fill(); g.restore();
+      }
+      for (let i = 0; i < 46; i++) {                   // darker undersides for depth
+        const y = horizon - 7 - Math.pow(R(), 1.5) * zone * 0.9, x = R() * W, len = W * (0.1 + R() * 0.4), th = 2 + R() * 5;
+        g.save(); g.globalAlpha = 0.05 + R() * 0.09; g.fillStyle = '#2a2440';
+        g.beginPath(); g.ellipse(x, y, len / 2, th, 0, 0, 7); g.fill(); g.restore();
+      }
       const t = new THREE.CanvasTexture(c);
       t.mapping = THREE.EquirectangularReflectionMapping; t.encoding = THREE.sRGBEncoding;
       return t;
@@ -177,8 +208,8 @@
 
     // ---- tower structure ----
     const tower = new THREE.Group(); scene.add(tower);
-    const stoneMat = new THREE.MeshStandardMaterial({ color: 0x1b2742, roughness: 0.22, metalness: 0.85, envMapIntensity: 1.25 });
-    const trimMat = new THREE.MeshStandardMaterial({ color: 0x2a3a66, roughness: 0.18, metalness: 0.95, envMapIntensity: 1.3 });
+    const stoneMat = new THREE.MeshStandardMaterial({ color: 0x151f36, roughness: 0.38, metalness: 0.55, envMapIntensity: 0.7 });
+    const trimMat = new THREE.MeshStandardMaterial({ color: 0x223355, roughness: 0.22, metalness: 0.8, envMapIntensity: 0.9 });
 
     function block(w, h, d, y, mat) {
       const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat || stoneMat);
@@ -271,8 +302,8 @@
     // ---- claimable front windows: reflective glass panels + additive glow overlay ----
     const COUNT = cols * rows;
     const idOf = i => pid(i % cols, Math.floor(i / cols));   // index -> `${r}-${c}`
-    const winMesh = new THREE.InstancedMesh(new THREE.PlaneGeometry(CW * 0.9, CH * 0.9),
-      new THREE.MeshStandardMaterial({ metalness: 0.9, roughness: 0.16, envMapIntensity: 1.35 }), COUNT);
+    const winMesh = new THREE.InstancedMesh(new THREE.PlaneGeometry(CW * 0.92, CH * 0.78),
+      new THREE.MeshStandardMaterial({ metalness: 0.88, roughness: 0.2, envMapIntensity: 1.0 }), COUNT);
     winMesh.name = 'claimable';
     const glowMesh = new THREE.InstancedMesh(new THREE.PlaneGeometry(CW * 1.12, CH * 1.08),
       new THREE.MeshBasicMaterial({ transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: true }), COUNT);
@@ -284,13 +315,23 @@
       dummy.position.z = p.z + 0.06; dummy.updateMatrix(); glowMesh.setMatrixAt(i, dummy.matrix);
     }
     tower.add(winMesh); tower.add(glowMesh);
-    // dark mullion backing so panel gaps read as curtain-wall structure
-    block(gridW + 1.2, gridH + 1.2, 0.4, 0, new THREE.MeshStandardMaterial({ color: 0x0b1020, roughness: 0.55, metalness: 0.5 }))
+    // curtain-wall backing: fine floor-slab + mullion grid so the facade reads as real floors
+    const gridTex = (function () {
+      const PX = 12, cw = cols * PX, ch = rows * PX;
+      const cv = document.createElement('canvas'); cv.width = cw; cv.height = ch;
+      const g = cv.getContext('2d'); g.fillStyle = '#080d1a'; g.fillRect(0, 0, cw, ch);
+      g.strokeStyle = 'rgba(120,140,185,0.20)'; g.lineWidth = 1;
+      for (let c = 0; c <= cols; c++) { g.beginPath(); g.moveTo(c * PX + 0.5, 0); g.lineTo(c * PX + 0.5, ch); g.stroke(); }
+      g.strokeStyle = 'rgba(95,115,155,0.32)';     // floor slabs a touch stronger than mullions
+      for (let r = 0; r <= rows; r++) { g.beginPath(); g.moveTo(0, r * PX + 0.5); g.lineTo(cw, r * PX + 0.5); g.stroke(); }
+      const t = new THREE.CanvasTexture(cv); t.encoding = THREE.sRGBEncoding; return t;
+    })();
+    block(gridW + 1.2, gridH + 1.2, 0.4, 0, new THREE.MeshStandardMaterial({ map: gridTex, color: 0x0a1020, roughness: 0.5, metalness: 0.5 }))
       .position.set(0, yGridTop - gridH / 2, SHAFT_D / 2 + 0.1);
 
     // ---- window colour model ----
     let store = {}, selection = new Set(), preview = new Set(), hoverIdx = -1;
-    const GLASS = new THREE.Color(0x24344f);   // available reflective glass tint
+    const GLASS = new THREE.Color(0x1c2a43);   // available reflective glass tint
     const SEL = new THREE.Color(0xffcf6a);
     const PREV = new THREE.Color(0xe8c070);
     const WHITE = new THREE.Color(0xffffff);
@@ -437,6 +478,7 @@
     function resize() {
       const w = mount.clientWidth || window.innerWidth, h = mount.clientHeight || window.innerHeight;
       renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix();
+      if (composer) composer.setSize(w, h);
     }
     mount.appendChild(canvas); resize(); applyCamera(); paintAll();
     window.addEventListener('resize', resize);
@@ -451,7 +493,7 @@
         beaconLight.intensity = 1.3 * pulse;
         beacon.material.color.set(0xff5a4d).multiplyScalar(0.55 + 0.6 * pulse);
       }
-      renderer.render(scene, camera);
+      if (composer) composer.render(); else renderer.render(scene, camera);
       raf = requestAnimationFrame(frame);
     }
     raf = requestAnimationFrame(frame);
