@@ -33,7 +33,7 @@
     } = opts;
 
     // ---- facade metrics (world units) ----
-    const CW = 3.0, CH = 4.0;                 // slimmer cells, taller floors → slender glass tower
+    const CW = 2.7, CH = 4.3;                 // slender residential proportions
     const gridW = cols * CW, gridH = rows * CH;
     const SHAFT_W = gridW + 8, SHAFT_D = 40, SHAFT_H = gridH + 12;
     const PODIUM_H = 16;
@@ -206,6 +206,20 @@
       }
     })();
 
+    // ---- road light-trails on the water/ground (city traffic from above) ----
+    (function roadLights() {
+      const g = new THREE.Group(); scene.add(g);
+      let s = 9091; const R = () => { s = (s * 1103515245 + 12345) & 0x7fffffff; return s / 0x7fffffff; };
+      for (let i = 0; i < 72; i++) {
+        const ang = R() * Math.PI * 2, dist = 190 + R() * 640, len = 8 + R() * 48;
+        const col = R() < 0.6 ? 0xffcf9a : 0xff5a4d;   // headlights warm / taillights red
+        const m = new THREE.Mesh(new THREE.BoxGeometry(len, 0.5, 1.0 + R() * 1.3),
+          new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false }));
+        m.position.set(Math.cos(ang) * dist, 0.6, Math.sin(ang) * dist);
+        m.rotation.y = R() * Math.PI; g.add(m);
+      }
+    })();
+
     // ---- tower structure ----
     const tower = new THREE.Group(); scene.add(tower);
     const stoneMat = new THREE.MeshStandardMaterial({ color: 0x151f36, roughness: 0.38, metalness: 0.55, envMapIntensity: 0.7 });
@@ -328,6 +342,23 @@
     })();
     block(gridW + 1.2, gridH + 1.2, 0.4, 0, new THREE.MeshStandardMaterial({ map: gridTex, color: 0x0a1020, roughness: 0.5, metalness: 0.5 }))
       .position.set(0, yGridTop - gridH / 2, SHAFT_D / 2 + 0.1);
+
+    // front-facade floor slabs (residential read — casts the horizontal floor shadows)
+    const slabMat = new THREE.MeshStandardMaterial({ color: 0x17223c, roughness: 0.5, metalness: 0.45 });
+    for (let r = 1; r < rows; r++) {
+      const slab = new THREE.Mesh(new THREE.BoxGeometry(gridW + 1.0, 0.5, 0.7), slabMat);
+      slab.position.set(0, yGridTop - r * CH, SHAFT_D / 2 + 0.5);
+      slab.castShadow = true; slab.receiveShadow = true; tower.add(slab);
+    }
+    // one emphasised terrace in the upper third
+    (function terrace() {
+      const ty = yGridTop - Math.round(rows * 0.34) * CH;
+      const deck = new THREE.Mesh(new THREE.BoxGeometry(gridW + 5, 1.1, 4.5), trimMat);
+      deck.position.set(0, ty, SHAFT_D / 2 + 2.0); deck.castShadow = true; tower.add(deck);
+      const rail = new THREE.Mesh(new THREE.BoxGeometry(gridW + 5, 1.4, 0.3),
+        new THREE.MeshStandardMaterial({ color: 0x3a4a72, roughness: 0.2, metalness: 0.7 }));
+      rail.position.set(0, ty + 1.2, SHAFT_D / 2 + 4.1); tower.add(rail);
+    })();
 
     // ---- window colour model ----
     let store = {}, selection = new Set(), preview = new Set(), hoverIdx = -1;
