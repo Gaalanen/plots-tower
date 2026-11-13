@@ -33,10 +33,10 @@
     } = opts;
 
     // ---- facade metrics (world units) ----
-    const CW = 3.2, CH = 3.6;                 // window cell w/h
+    const CW = 3.0, CH = 4.0;                 // slimmer cells, taller floors → slender glass tower
     const gridW = cols * CW, gridH = rows * CH;
-    const SHAFT_W = gridW + 10, SHAFT_D = 46, SHAFT_H = gridH + 16;
-    const PODIUM_H = 15;
+    const SHAFT_W = gridW + 8, SHAFT_D = 40, SHAFT_H = gridH + 12;
+    const PODIUM_H = 16;
     const yShaft0 = PODIUM_H;                  // shaft base
     const yGridTop = yShaft0 + (SHAFT_H + gridH) / 2;   // top row centre band
     const centreY = yShaft0 + SHAFT_H / 2;
@@ -55,7 +55,7 @@
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     renderer.outputEncoding = THREE.sRGBEncoding;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.25;
+    renderer.toneMappingExposure = 1.15;
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     const canvas = renderer.domElement;
@@ -92,9 +92,15 @@
     function skyTexture() {
       const c = document.createElement('canvas'); c.width = 16; c.height = 256;
       const g = c.getContext('2d'); const grd = g.createLinearGradient(0, 0, 0, 256);
-      grd.addColorStop(0.00, '#05070f'); grd.addColorStop(0.42, '#0a1330');
-      grd.addColorStop(0.64, '#132049'); grd.addColorStop(0.80, '#2a3566');
-      grd.addColorStop(0.90, '#b5713f'); grd.addColorStop(1.00, '#17121f');
+      grd.addColorStop(0.00, '#17264f');   // deep blue zenith
+      grd.addColorStop(0.26, '#33457a');   // blue
+      grd.addColorStop(0.40, '#6d6498');   // lavender
+      grd.addColorStop(0.47, '#bf7a78');   // pink
+      grd.addColorStop(0.505, '#f2a568');  // orange
+      grd.addColorStop(0.525, '#ffd69c');  // bright sunset glow at the horizon
+      grd.addColorStop(0.545, '#13223f');  // water line
+      grd.addColorStop(0.72, '#0c1930');
+      grd.addColorStop(1.00, '#0a1526');   // far water
       g.fillStyle = grd; g.fillRect(0, 0, 16, 256);
       const t = new THREE.CanvasTexture(c);
       t.mapping = THREE.EquirectangularReflectionMapping; t.encoding = THREE.sRGBEncoding;
@@ -107,29 +113,31 @@
     );
     scene.add(skyDome);
     scene.environment = pmrem.fromEquirectangular(sky).texture;
-    scene.fog = new THREE.Fog(0x0a1330, 420, 1700);
+    scene.fog = new THREE.Fog(0x33406a, 700, 3000);
 
-    // ---- lights ----
-    const hemi = new THREE.HemisphereLight(0x9fb4e8, 0x1a1626, 0.5); scene.add(hemi);
-    const moon = new THREE.DirectionalLight(0xffd9a6, 1.15);         // warm key, strong enough to model the form
-    moon.position.set(-300, 420, 240); moon.castShadow = true;
-    moon.shadow.mapSize.set(2048, 2048); moon.shadow.bias = -0.0004;
-    const sc = moon.shadow.camera; sc.near = 60; sc.far = 1600; sc.left = -240; sc.right = 240; sc.top = 380; sc.bottom = -60;
-    scene.add(moon);
-    const fill = new THREE.DirectionalLight(0x6ea8ff, 0.35); fill.position.set(260, 160, -200); scene.add(fill);
-    const rim = new THREE.DirectionalLight(0xbcd0ff, 0.6); rim.position.set(160, 240, -340); scene.add(rim);  // cool back-rim separates tower from sky
+    // ---- lights (golden-hour setup) ----
+    const hemi = new THREE.HemisphereLight(0xb9c4ea, 0x241a2a, 0.55); scene.add(hemi);
+    const sun = new THREE.DirectionalLight(0xffb978, 1.05);          // warm low sunset key
+    sun.position.set(-360, 180, 140); sun.castShadow = true;
+    sun.shadow.mapSize.set(2048, 2048); sun.shadow.bias = -0.0004;
+    const sc = sun.shadow.camera; sc.near = 60; sc.far = 1800; sc.left = -260; sc.right = 260; sc.top = 420; sc.bottom = -80;
+    scene.add(sun);
+    const fill = new THREE.DirectionalLight(0xffd0a0, 0.30); fill.position.set(300, 120, 120); scene.add(fill);
+    const rim = new THREE.DirectionalLight(0xaecbff, 0.70); rim.position.set(120, 260, -360); scene.add(rim);  // cool back-rim separates tower from sky
 
-    // ---- ground ----
-    (function () {
-      const c = document.createElement('canvas'); c.width = c.height = 512;
-      const g = c.getContext('2d'); g.fillStyle = '#05070e'; g.fillRect(0, 0, 512, 512);
-      const rg = g.createRadialGradient(256, 256, 20, 256, 256, 256);
-      rg.addColorStop(0, 'rgba(228,190,110,.30)'); rg.addColorStop(0.5, 'rgba(40,58,110,.12)'); rg.addColorStop(1, 'rgba(5,7,14,0)');
-      g.fillStyle = rg; g.fillRect(0, 0, 512, 512);
-      const tex = new THREE.CanvasTexture(c); tex.encoding = THREE.sRGBEncoding;
-      const m = new THREE.Mesh(new THREE.CircleGeometry(1600, 64),
-        new THREE.MeshStandardMaterial({ map: tex, color: 0x090d16, roughness: 0.35, metalness: 0.6 }));
-      m.rotation.x = -Math.PI / 2; m.receiveShadow = true; scene.add(m);
+    // ---- reflective water (mirrors the sunset → photoreal ground) ----
+    (function water() {
+      const m = new THREE.Mesh(new THREE.CircleGeometry(2400, 96),
+        new THREE.MeshStandardMaterial({ color: 0x0b1726, roughness: 0.14, metalness: 0.95, envMapIntensity: 1.2 }));
+      m.rotation.x = -Math.PI / 2; m.position.y = -0.5; m.receiveShadow = true; scene.add(m);
+      const c = document.createElement('canvas'); c.width = c.height = 256;
+      const g = c.getContext('2d'); const rg = g.createRadialGradient(128, 128, 8, 128, 128, 128);
+      rg.addColorStop(0, 'rgba(255,170,110,.26)'); rg.addColorStop(1, 'rgba(255,170,110,0)');
+      g.fillStyle = rg; g.fillRect(0, 0, 256, 256);
+      const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding;
+      const glow = new THREE.Mesh(new THREE.CircleGeometry(340, 48),
+        new THREE.MeshBasicMaterial({ map: t, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false }));
+      glow.rotation.x = -Math.PI / 2; glow.position.y = 0.2; scene.add(glow);
     })();
 
     // ---- surrounding night city (real boxes with lit-window facades → scale + depth) ----
@@ -169,8 +177,8 @@
 
     // ---- tower structure ----
     const tower = new THREE.Group(); scene.add(tower);
-    const stoneMat = new THREE.MeshStandardMaterial({ color: 0x242c4a, roughness: 0.5, metalness: 0.55 });
-    const trimMat = new THREE.MeshStandardMaterial({ color: 0x3a4880, roughness: 0.3, metalness: 0.9 });
+    const stoneMat = new THREE.MeshStandardMaterial({ color: 0x1b2742, roughness: 0.22, metalness: 0.85, envMapIntensity: 1.25 });
+    const trimMat = new THREE.MeshStandardMaterial({ color: 0x2a3a66, roughness: 0.18, metalness: 0.95, envMapIntensity: 1.3 });
 
     function block(w, h, d, y, mat) {
       const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat || stoneMat);
@@ -206,6 +214,9 @@
     beacon.position.y = topY + 4 + 42; tower.add(beacon);
     const beaconLight = new THREE.PointLight(0xff5a4d, 1.4, 120, 2);
     beaconLight.position.copy(beacon.position); tower.add(beaconLight);
+    // warm penthouse wash on the crown
+    const crownLight = new THREE.PointLight(0xffd39a, 0.9, 180, 2);
+    crownLight.position.set(0, topY - 18, SHAFT_D / 2 + 8); tower.add(crownLight);
 
     // ---- decorative (non-claimable) windows: sides, back, podium, crown ----
     (function decorative() {
@@ -249,54 +260,68 @@
       for (let i = 0; i < N; i++) {
         mesh.setMatrixAt(i, places[i]);
         const h = ((Math.sin(i * 12.9898) * 43758.5453) % 1 + 1) % 1;
-        if (h < 0.26) { const p = warm[i % 3]; const j = 0.7 + 0.3 * (((Math.sin(i * 7.3) * 1e3) % 1 + 1) % 1); col.setRGB(p[0] * j, p[1] * j, p[2] * j); }
-        else { const j = 0.6 + 0.6 * (((Math.sin(i * 3.1) * 1e3) % 1 + 1) % 1); col.setRGB(0.05 * j, 0.08 * j, 0.16 * j); }
+        if (h < 0.4) { const p = warm[i % 3]; const j = 0.75 + 0.35 * (((Math.sin(i * 7.3) * 1e3) % 1 + 1) % 1); col.setRGB(p[0] * j, p[1] * j, p[2] * j); }
+        else { const j = 0.6 + 0.6 * (((Math.sin(i * 3.1) * 1e3) % 1 + 1) % 1); col.setRGB(0.06 * j, 0.09 * j, 0.17 * j); }
         mesh.setColorAt(i, col);
       }
       mesh.instanceColor.needsUpdate = true;
       tower.add(mesh);
     })();
 
-    // ---- claimable front windows (InstancedMesh, index = r*cols + c) ----
+    // ---- claimable front windows: reflective glass panels + additive glow overlay ----
     const COUNT = cols * rows;
     const idOf = i => pid(i % cols, Math.floor(i / cols));   // index -> `${r}-${c}`
-    const winMesh = new THREE.InstancedMesh(new THREE.PlaneGeometry(CW * 0.82, CH * 0.82),
-      new THREE.MeshBasicMaterial({ toneMapped: true }), COUNT);
+    const winMesh = new THREE.InstancedMesh(new THREE.PlaneGeometry(CW * 0.9, CH * 0.9),
+      new THREE.MeshStandardMaterial({ metalness: 0.9, roughness: 0.16, envMapIntensity: 1.35 }), COUNT);
     winMesh.name = 'claimable';
+    const glowMesh = new THREE.InstancedMesh(new THREE.PlaneGeometry(CW * 1.12, CH * 1.08),
+      new THREE.MeshBasicMaterial({ transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: true }), COUNT);
     const dummy = new THREE.Object3D();
     for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
       const i = r * cols + c, p = winCentre(c, r);
       dummy.position.set(p.x, p.y, p.z); dummy.rotation.set(0, 0, 0); dummy.scale.set(1, 1, 1);
       dummy.updateMatrix(); winMesh.setMatrixAt(i, dummy.matrix);
+      dummy.position.z = p.z + 0.06; dummy.updateMatrix(); glowMesh.setMatrixAt(i, dummy.matrix);
     }
-    tower.add(winMesh);
-    // mullion field behind the claimable grid, so gaps read as structure
-    block(gridW + 1.2, gridH + 1.2, 0.4, (yGridTop + (yGridTop - gridH)) / 2 + 0, new THREE.MeshStandardMaterial({ color: 0x11162c, roughness: 0.8, metalness: 0.2 }))
-      .position.set(0, yGridTop - gridH / 2, SHAFT_D / 2 + 0.12);
+    tower.add(winMesh); tower.add(glowMesh);
+    // dark mullion backing so panel gaps read as curtain-wall structure
+    block(gridW + 1.2, gridH + 1.2, 0.4, 0, new THREE.MeshStandardMaterial({ color: 0x0b1020, roughness: 0.55, metalness: 0.5 }))
+      .position.set(0, yGridTop - gridH / 2, SHAFT_D / 2 + 0.1);
 
     // ---- window colour model ----
     let store = {}, selection = new Set(), preview = new Set(), hoverIdx = -1;
-    const DARK = new THREE.Color(0x0c1324);
+    const GLASS = new THREE.Color(0x24344f);   // available reflective glass tint
     const SEL = new THREE.Color(0xffcf6a);
     const PREV = new THREE.Color(0xe8c070);
-    const tmp = new THREE.Color();
+    const WHITE = new THREE.Color(0xffffff);
+    const tmp = new THREE.Color(), tmp2 = new THREE.Color();
 
-    function baseColor(i, out) {
+    function winColor(i, out) {
       const id = idOf(i);
       if (selection.has(id)) return out.copy(SEL);
       if (preview.has(id)) return out.copy(PREV);
       const rec = store[id];
-      if (rec) { out.set(rec.color || '#7FD3FF'); return out.multiplyScalar(1.25); }
-      // available: dark glass with faint deterministic variance
-      const j = 0.7 + 0.5 * (((Math.sin(i * 2.17) * 1e3) % 1 + 1) % 1);
-      return out.copy(DARK).multiplyScalar(j);
+      if (rec) { out.set(rec.color || '#7FD3FF'); return out.multiplyScalar(0.95); }
+      const j = 0.8 + 0.4 * (((Math.sin(i * 2.17) * 1e3) % 1 + 1) % 1);
+      return out.copy(GLASS).multiplyScalar(j);
+    }
+    function glowColor(i, out) {
+      const id = idOf(i);
+      if (selection.has(id)) return out.copy(SEL).multiplyScalar(0.42);
+      if (preview.has(id)) return out.copy(PREV).multiplyScalar(0.22);
+      const rec = store[id];
+      if (rec) { out.set(rec.color || '#7FD3FF'); return out.multiplyScalar(0.5); }
+      return out.setRGB(0, 0, 0);   // available → no glow (additive black)
     }
     function paint(i) {
-      baseColor(i, tmp);
-      if (i === hoverIdx && !selection.has(idOf(i))) tmp.lerp(new THREE.Color(0xffffff), 0.35);
-      winMesh.setColorAt(i, tmp);
+      const hov = (i === hoverIdx && !selection.has(idOf(i)));
+      winColor(i, tmp); if (hov) tmp.lerp(WHITE, 0.3); winMesh.setColorAt(i, tmp);
+      glowColor(i, tmp2); if (hov) tmp2.lerp(WHITE, 0.18); glowMesh.setColorAt(i, tmp2);
     }
-    function paintAll() { for (let i = 0; i < COUNT; i++) paint(i); winMesh.instanceColor.needsUpdate = true; }
+    function paintAll() {
+      for (let i = 0; i < COUNT; i++) paint(i);
+      winMesh.instanceColor.needsUpdate = true; glowMesh.instanceColor.needsUpdate = true;
+    }
 
     // ---- pointer: orbit vs. window pick / drag-block ----
     const ray = new THREE.Raycaster();
@@ -371,7 +396,7 @@
         onHoverEnter(id, { x: ev.clientX, y: ev.clientY }, { leased: !!rec, record: rec || null });
         canvas.style.cursor = rec ? (rec.linkUrl ? 'pointer' : 'default') : 'pointer';
       } else { onHoverLeave(); canvas.style.cursor = 'grab'; }
-      winMesh.instanceColor.needsUpdate = true;
+      winMesh.instanceColor.needsUpdate = true; glowMesh.instanceColor.needsUpdate = true;
     }
 
     function endPointer(ev) {
@@ -390,7 +415,7 @@
     }
     canvas.addEventListener('pointerup', endPointer);
     canvas.addEventListener('pointercancel', ev => { pts.delete(ev.pointerId); if (pts.size < 2) pinchD = 0; mode = null; startCell = null; preview.clear(); paintAll(); });
-    canvas.addEventListener('pointerleave', () => { if (hoverIdx >= 0) { const p = hoverIdx; hoverIdx = -1; paint(p); winMesh.instanceColor.needsUpdate = true; onHoverLeave(); } });
+    canvas.addEventListener('pointerleave', () => { if (hoverIdx >= 0) { const p = hoverIdx; hoverIdx = -1; paint(p); winMesh.instanceColor.needsUpdate = true; glowMesh.instanceColor.needsUpdate = true; onHoverLeave(); } });
 
     canvas.addEventListener('wheel', ev => {
       ev.preventDefault();
