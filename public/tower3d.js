@@ -144,7 +144,7 @@
     );
     scene.add(skyDome);
     scene.environment = pmrem.fromEquirectangular(sky).texture;
-    scene.fog = new THREE.Fog(0x33406a, 700, 3000);
+    scene.fog = new THREE.Fog(0x33406a, 520, 2800);
 
     // ---- lights (golden-hour setup) ----
     const hemi = new THREE.HemisphereLight(0xb9c4ea, 0x241a2a, 0.55); scene.add(hemi);
@@ -158,9 +158,19 @@
 
     // ---- reflective water (mirrors the sunset → photoreal ground) ----
     (function water() {
-      const m = new THREE.Mesh(new THREE.CircleGeometry(2400, 96),
+      const m = new THREE.Mesh(new THREE.CircleGeometry(2600, 96),
         new THREE.MeshStandardMaterial({ color: 0x0b1726, roughness: 0.14, metalness: 0.95, envMapIntensity: 1.2 }));
       m.rotation.x = -Math.PI / 2; m.position.y = -0.5; m.receiveShadow = true; scene.add(m);
+      // matte land under the city with a faint street grid + lamp dots (sea stays beyond it)
+      const lc = document.createElement('canvas'); lc.width = lc.height = 256;
+      const lg = lc.getContext('2d'); lg.fillStyle = '#070b14'; lg.fillRect(0, 0, 256, 256);
+      lg.strokeStyle = 'rgba(70,90,130,0.16)'; lg.lineWidth = 1;
+      for (let i = 0; i <= 8; i++) { const p = i * 32; lg.beginPath(); lg.moveTo(p, 0); lg.lineTo(p, 256); lg.moveTo(0, p); lg.lineTo(256, p); lg.stroke(); }
+      for (let i = 0; i < 130; i++) { lg.fillStyle = Math.random() < 0.6 ? 'rgba(255,200,130,0.7)' : 'rgba(150,190,255,0.55)'; lg.fillRect(Math.random() * 256, Math.random() * 256, 1.4, 1.4); }
+      const lt = new THREE.CanvasTexture(lc); lt.wrapS = lt.wrapT = THREE.RepeatWrapping; lt.repeat.set(18, 18); lt.encoding = THREE.sRGBEncoding;
+      const land = new THREE.Mesh(new THREE.CircleGeometry(1500, 96),
+        new THREE.MeshStandardMaterial({ color: 0x0a0f1a, map: lt, emissive: 0xffffff, emissiveMap: lt, emissiveIntensity: 0.5, roughness: 0.9, metalness: 0.1 }));
+      land.rotation.x = -Math.PI / 2; land.position.y = 0.0; land.receiveShadow = true; scene.add(land);
       const c = document.createElement('canvas'); c.width = c.height = 256;
       const g = c.getContext('2d'); const rg = g.createRadialGradient(128, 128, 8, 128, 128, 128);
       rg.addColorStop(0, 'rgba(255,170,110,.26)'); rg.addColorStop(1, 'rgba(255,170,110,0)');
@@ -191,18 +201,24 @@
       const base = facadeTexture();
       const group = new THREE.Group(); scene.add(group);
       let s = 20260808; const R = () => { s = (s * 1103515245 + 12345) & 0x7fffffff; return s / 0x7fffffff; };
-      for (let i = 0; i < 78; i++) {
-        const ang = R() * Math.PI * 2, dist = 340 + R() * 560;   // clear plaza: nothing inside the camera orbit
-        const w = 22 + R() * 44, d = 22 + R() * 44;
-        const h = 44 + R() * 150 + (dist > 620 ? R() * 80 : 0);
+      function place(ang, dist, w, d, h) {
         const t = base.clone(); t.needsUpdate = true;
-        t.repeat.set(Math.max(1, Math.round(w / 16)), Math.max(2, Math.round(h / 16)));
+        t.repeat.set(Math.max(1, Math.round(w / 15)), Math.max(2, Math.round(h / 15)));
         const mat = new THREE.MeshStandardMaterial({ color: 0x0a1120, map: t, emissive: 0xffffff,
           emissiveMap: t, emissiveIntensity: 0.85, roughness: 0.8, metalness: 0.12 });
         const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
         m.position.set(Math.cos(ang) * dist, h / 2, Math.sin(ang) * dist);
-        m.rotation.y = R() * 0.5 - 0.25;
-        group.add(m);
+        m.rotation.y = R() * 0.5 - 0.25; group.add(m);
+      }
+      // dense city, grounded on the land disc (clear plaza stays inside the camera orbit)
+      for (let i = 0; i < 150; i++) {
+        const ang = R() * Math.PI * 2, dist = 330 + R() * 660;
+        place(ang, dist, 20 + R() * 46, 20 + R() * 46, 38 + R() * 160 + (dist > 620 ? R() * 90 : 0));
+      }
+      // hazy far skyline ring that fades into the sunset
+      for (let i = 0; i < 56; i++) {
+        const ang = R() * Math.PI * 2, dist = 1010 + R() * 420;
+        place(ang, dist, 28 + R() * 52, 28 + R() * 52, 70 + R() * 170);
       }
     })();
 
