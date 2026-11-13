@@ -55,7 +55,7 @@
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     renderer.outputEncoding = THREE.sRGBEncoding;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.15;
+    renderer.toneMappingExposure = 1.25;
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     const canvas = renderer.domElement;
@@ -65,10 +65,10 @@
     const camera = new THREE.PerspectiveCamera(42, 1, 0.5, 6000);
 
     // ---- orbit state ----
-    const target = new THREE.Vector3(0, centreY * 0.86, 0);
-    const orbit = { radius: 360, theta: 0, phi: Math.PI * 0.46 };
-    const PHI_MIN = 0.16, PHI_MAX = Math.PI * 0.5 - 0.02, R_MIN = 120, R_MAX = 820;
-    let autoRotate = false;
+    const target = new THREE.Vector3(0, 108, 0);
+    const orbit = { radius: 300, theta: -0.6, phi: 1.38 };   // 3/4, slightly above — depth + setbacks read
+    const PHI_MIN = 0.5, PHI_MAX = Math.PI * 0.5 - 0.02, R_MIN = 150, R_MAX = 460;
+    let autoRotate = !reduce;   // gentle idle spin; stops the moment the viewer grabs it
 
     function applyCamera() {
       const { radius: r, phi: p, theta: t } = orbit;
@@ -107,16 +107,17 @@
     );
     scene.add(skyDome);
     scene.environment = pmrem.fromEquirectangular(sky).texture;
-    scene.fog = new THREE.Fog(0x0a1330, 520, 2000);
+    scene.fog = new THREE.Fog(0x0a1330, 420, 1700);
 
     // ---- lights ----
-    const hemi = new THREE.HemisphereLight(0x9fb4e8, 0x1a1626, 0.4); scene.add(hemi);
-    const moon = new THREE.DirectionalLight(0xffca96, 0.7);
-    moon.position.set(-320, 360, 200); moon.castShadow = true;
-    moon.shadow.mapSize.set(2048, 2048);
-    const sc = moon.shadow.camera; sc.near = 60; sc.far = 1400; sc.left = -200; sc.right = 200; sc.top = 320; sc.bottom = -40;
+    const hemi = new THREE.HemisphereLight(0x9fb4e8, 0x1a1626, 0.5); scene.add(hemi);
+    const moon = new THREE.DirectionalLight(0xffd9a6, 1.15);         // warm key, strong enough to model the form
+    moon.position.set(-300, 420, 240); moon.castShadow = true;
+    moon.shadow.mapSize.set(2048, 2048); moon.shadow.bias = -0.0004;
+    const sc = moon.shadow.camera; sc.near = 60; sc.far = 1600; sc.left = -240; sc.right = 240; sc.top = 380; sc.bottom = -60;
     scene.add(moon);
-    const fill = new THREE.DirectionalLight(0x6ea8ff, 0.3); fill.position.set(260, 140, -200); scene.add(fill);
+    const fill = new THREE.DirectionalLight(0x6ea8ff, 0.35); fill.position.set(260, 160, -200); scene.add(fill);
+    const rim = new THREE.DirectionalLight(0xbcd0ff, 0.6); rim.position.set(160, 240, -340); scene.add(rim);  // cool back-rim separates tower from sky
 
     // ---- ground ----
     (function () {
@@ -131,10 +132,45 @@
       m.rotation.x = -Math.PI / 2; m.receiveShadow = true; scene.add(m);
     })();
 
+    // ---- surrounding night city (real boxes with lit-window facades → scale + depth) ----
+    function facadeTexture() {
+      const c = document.createElement('canvas'); c.width = 64; c.height = 128;
+      const g = c.getContext('2d'); g.fillStyle = '#070c18'; g.fillRect(0, 0, 64, 128);
+      const cols = 6, rows = 14, m = 3, cw = (64 - m * 2) / cols, rh = (128 - m * 2) / rows;
+      for (let r = 0; r < rows; r++) for (let k = 0; k < cols; k++) {
+        const lit = Math.random() < 0.5;
+        if (lit) { const warm = Math.random() < 0.62;
+          g.fillStyle = warm ? `rgba(255,200,130,${(0.6 + Math.random() * 0.4).toFixed(2)})`
+                             : `rgba(150,190,255,${(0.5 + Math.random() * 0.4).toFixed(2)})`;
+        } else g.fillStyle = 'rgba(18,28,52,0.9)';
+        g.fillRect(m + k * cw, m + r * rh, cw * 0.72, rh * 0.6);
+      }
+      const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.encoding = THREE.sRGBEncoding;
+      return t;
+    }
+    (function buildCity() {
+      const base = facadeTexture();
+      const group = new THREE.Group(); scene.add(group);
+      let s = 20260808; const R = () => { s = (s * 1103515245 + 12345) & 0x7fffffff; return s / 0x7fffffff; };
+      for (let i = 0; i < 78; i++) {
+        const ang = R() * Math.PI * 2, dist = 340 + R() * 560;   // clear plaza: nothing inside the camera orbit
+        const w = 22 + R() * 44, d = 22 + R() * 44;
+        const h = 44 + R() * 150 + (dist > 620 ? R() * 80 : 0);
+        const t = base.clone(); t.needsUpdate = true;
+        t.repeat.set(Math.max(1, Math.round(w / 16)), Math.max(2, Math.round(h / 16)));
+        const mat = new THREE.MeshStandardMaterial({ color: 0x0a1120, map: t, emissive: 0xffffff,
+          emissiveMap: t, emissiveIntensity: 0.85, roughness: 0.8, metalness: 0.12 });
+        const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
+        m.position.set(Math.cos(ang) * dist, h / 2, Math.sin(ang) * dist);
+        m.rotation.y = R() * 0.5 - 0.25;
+        group.add(m);
+      }
+    })();
+
     // ---- tower structure ----
     const tower = new THREE.Group(); scene.add(tower);
-    const stoneMat = new THREE.MeshStandardMaterial({ color: 0x242c4a, roughness: 0.6, metalness: 0.4 });
-    const trimMat = new THREE.MeshStandardMaterial({ color: 0x3a4880, roughness: 0.35, metalness: 0.75 });
+    const stoneMat = new THREE.MeshStandardMaterial({ color: 0x242c4a, roughness: 0.5, metalness: 0.55 });
+    const trimMat = new THREE.MeshStandardMaterial({ color: 0x3a4880, roughness: 0.3, metalness: 0.9 });
 
     function block(w, h, d, y, mat) {
       const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat || stoneMat);
@@ -282,6 +318,7 @@
 
     canvas.addEventListener('pointerdown', ev => {
       canvas.setPointerCapture(ev.pointerId);
+      autoRotate = false;            // viewer took control of the camera
       pts.set(ev.pointerId, ev);
       if (pts.size === 2) { const [a, b] = [...pts.values()]; pinchD = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY); pinchR = orbit.radius; mode = null; return; }
       last = { x: ev.clientX, y: ev.clientY };
@@ -365,9 +402,9 @@
     function frameTo(radius, phi, theta) {
       orbit.radius = radius; orbit.phi = phi; if (theta != null) orbit.theta = theta; applyCamera();
     }
-    const frameCity = () => frameTo(420, Math.PI * 0.46, orbit.theta);
-    const frameTower = () => frameTo(240, Math.PI * 0.44, orbit.theta);
-    const reset = () => frameTo(360, Math.PI * 0.46, 0);
+    const frameCity = () => frameTo(400, 1.30, orbit.theta);
+    const frameTower = () => frameTo(230, 1.40, orbit.theta);
+    const reset = () => { autoRotate = !reduce; frameTo(300, 1.38, -0.6); };
     const zoom = f => { orbit.radius = Math.min(R_MAX, Math.max(R_MIN, orbit.radius / f)); applyCamera(); };
     const toggleAutoRotate = () => { autoRotate = !autoRotate; return autoRotate; };
 
@@ -395,12 +432,14 @@
     raf = requestAnimationFrame(frame);
 
     // ---- public API ----
-    return {
+    const api = {
       el: canvas,
       setStore(s) { store = s || {}; if (hoverIdx >= 0) hoverIdx = -1; paintAll(); },
       setSelection(sel) { selection = sel || new Set(); paintAll(); },
       refresh: paintAll,
       resize, zoom, frameCity, frameTower, reset, toggleAutoRotate,
+      getTheta: () => orbit.theta,
+      setTheta(t) { autoRotate = false; orbit.theta = t; applyCamera(); },   // used for scripted capture
       dispose() {
         running = false; cancelAnimationFrame(raf);
         window.removeEventListener('resize', resize);
@@ -408,6 +447,8 @@
         if (canvas.parentNode) canvas.parentNode.removeChild(canvas);
       },
     };
+    try { window.__tower3d = api; } catch (e) {}
+    return api;
   }
 
   window.Tower3D = { init, supported };
