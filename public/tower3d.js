@@ -74,9 +74,9 @@
     }
 
     // ---- orbit state ----
-    const target = new THREE.Vector3(0, 108, 0);
-    const orbit = { radius: 300, theta: -0.6, phi: 1.38 };   // 3/4, slightly above — depth + setbacks read
-    const PHI_MIN = 0.5, PHI_MAX = Math.PI * 0.5 - 0.02, R_MIN = 150, R_MAX = 460;
+    const target = new THREE.Vector3(0, 140, 0);
+    const orbit = { radius: 450, theta: -0.6, phi: 1.38 };   // 3/4, slightly above — whole tower incl. spire in frame
+    const PHI_MIN = 0.5, PHI_MAX = Math.PI * 0.5 - 0.02, R_MIN = 150, R_MAX = 620;
     let autoRotate = !reduce;   // gentle idle spin; stops the moment the viewer grabs it
 
     function applyCamera() {
@@ -250,16 +250,43 @@
       const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat || stoneMat);
       m.position.y = y; m.castShadow = true; m.receiveShadow = true; tower.add(m); return m;
     }
+    // square frustum (flat-shaded) — tapers by factor k toward the top
+    function frustum(wB, dB, k, h, y, mat) {
+      let g = new THREE.CylinderGeometry(Math.SQRT2 * k, Math.SQRT2, 1, 4, 1);
+      g.rotateY(Math.PI / 4); g = g.toNonIndexed(); g.computeVertexNormals();   // crisp faces, not a rounded pillow
+      const m = new THREE.Mesh(g, mat || stoneMat);
+      m.scale.set(wB / 2, h, dB / 2); m.position.y = y + h / 2;
+      m.castShadow = true; m.receiveShadow = true; tower.add(m); return m;
+    }
+
     // podium, shaft
     block(SHAFT_W + 18, PODIUM_H, SHAFT_D + 16, PODIUM_H / 2);
     block(SHAFT_W + 20, 2.4, SHAFT_D + 18, PODIUM_H + 0.4, trimMat);
     block(SHAFT_W, SHAFT_H, SHAFT_D, yShaft0 + SHAFT_H / 2);
 
-    // setback crown tiers
+    // asymmetric shoulders: a tall right wing and a lower left one, set back from the claimable facade
+    const SHW = SHAFT_W / 2;
+    const wings = [
+      { x: SHW + 6, w: 12, d: 32, z: -4, h: Math.round(SHAFT_H * 0.46) },
+      { x: -(SHW + 6), w: 12, d: 32, z: -4, h: Math.round(SHAFT_H * 0.26) },
+    ];
+    wings.forEach(g => {
+      const body = block(g.w, g.h, g.d, yShaft0 + g.h / 2); body.position.x = g.x; body.position.z = g.z;
+      const cornice = block(g.w + 1.6, 1.6, g.d + 1.6, yShaft0 + g.h + 0.8, trimMat); cornice.position.x = g.x; cornice.position.z = g.z;
+    });
+
+    // Art-Deco corner piers: slim vertical accents that stretch the silhouette upward
+    const pierH = SHAFT_H + 14;
+    [[1, 1], [-1, 1], [1, -1], [-1, -1]].forEach(([sx, sz]) => {
+      const p = block(3.2, pierH, 3.2, yShaft0 + pierH / 2, trimMat);
+      p.position.x = sx * (SHW + 0.4); p.position.z = sz * (SHAFT_D / 2 + 0.2);
+    });
+
+    // setback crown: three tiers narrowing in both axes, then a tapered pinnacle
     const crown = [
-      { w: SHAFT_W - 16, d: SHAFT_D - 12, h: 22 },
-      { w: SHAFT_W - 32, d: SHAFT_D - 22, h: 16 },
-      { w: SHAFT_W - 46, d: SHAFT_D - 30, h: 12 },
+      { w: SHAFT_W - 14, d: SHAFT_D - 10, h: 26 },
+      { w: SHAFT_W - 30, d: SHAFT_D - 20, h: 20 },
+      { w: SHAFT_W - 44, d: SHAFT_D - 28, h: 16 },
     ];
     let cy = yShaft0 + SHAFT_H;
     const crownBounds = [];
@@ -269,27 +296,29 @@
       crownBounds.push({ ...t, base: cy });
       cy += t.h;
     });
-    const topY = cy;
-    // spire + beacon
-    block(10, 4, 10, topY + 2, trimMat);
-    const spire = new THREE.Mesh(new THREE.ConeGeometry(3.6, 40, 8),
+    // faceted pinnacle: tapers to a third of the top tier's width (replaces the old flat cap)
+    const lastTier = crown[crown.length - 1], capH = 24;
+    frustum(lastTier.w, lastTier.d, 1 / 3, capH, cy, trimMat);
+    const topY = cy + capH;
+    // slender spire + beacon
+    const spire = new THREE.Mesh(new THREE.ConeGeometry(2.6, 48, 8),
       new THREE.MeshStandardMaterial({ color: 0x4a5890, roughness: 0.2, metalness: 0.95 }));
-    spire.position.y = topY + 4 + 20; spire.castShadow = true; tower.add(spire);
+    spire.position.y = topY + 24; spire.castShadow = true; tower.add(spire);
     const beacon = new THREE.Mesh(new THREE.SphereGeometry(1.7, 16, 16),
       new THREE.MeshBasicMaterial({ color: 0xff5a4d }));
-    beacon.position.y = topY + 4 + 42; tower.add(beacon);
+    beacon.position.y = topY + 50; tower.add(beacon);
     const beaconLight = new THREE.PointLight(0xff5a4d, 1.4, 120, 2);
     beaconLight.position.copy(beacon.position); tower.add(beaconLight);
     // warm penthouse wash on the crown
     const crownLight = new THREE.PointLight(0xffd39a, 0.9, 180, 2);
-    crownLight.position.set(0, topY - 18, SHAFT_D / 2 + 8); tower.add(crownLight);
+    crownLight.position.set(0, yShaft0 + SHAFT_H + 22, SHAFT_D / 2 + 10); tower.add(crownLight);
 
     // ---- decorative (non-claimable) windows: sides, back, podium, crown ----
     (function decorative() {
       const dummy = new THREE.Object3D();
       const places = [];
       const PW = 2.3, PH = 2.7;
-      function face(cx0, baseY, h, spanHalf, axis, sign, hw, hd) {
+      function face(cx0, baseY, h, spanHalf, axis, sign, hw, hd, ox = 0, oz = 0) {
         const n = Math.max(1, Math.floor((spanHalf * 2 - 6) / (PW + 1.6)));
         const rowsN = Math.max(1, Math.floor((h - 6) / (PH + 1.5)));
         const a0 = -(n - 1) * (PW + 1.6) / 2, y0 = baseY + (h - (rowsN - 1) * (PH + 1.5)) / 2;
@@ -298,6 +327,7 @@
           dummy.position.set(0, yy, 0);
           if (axis === 'z') { dummy.position.x = along; dummy.position.z = sign * (hd + 0.3); dummy.rotation.set(0, sign > 0 ? 0 : Math.PI, 0); }
           else { dummy.position.z = along; dummy.position.x = sign * (hw + 0.3); dummy.rotation.set(0, sign > 0 ? Math.PI / 2 : -Math.PI / 2, 0); }
+          dummy.position.x += ox; dummy.position.z += oz;      // offset for blocks not centred on the axis (wings)
           dummy.scale.set(PW, PH, 1); dummy.updateMatrix();
           places.push(dummy.matrix.clone());
         }
@@ -316,6 +346,13 @@
         const w = t.w / 2, d = t.d / 2;
         face(0, t.base, t.h, w, 'z', +1, w, d); face(0, t.base, t.h, w, 'z', -1, w, d);
         face(0, t.base, t.h, d, 'x', +1, w, d); face(0, t.base, t.h, d, 'x', -1, w, d);
+      });
+      // wings: outer, front and back faces (the inner side is buried in the shaft)
+      wings.forEach(g => {
+        const gw = g.w / 2, gd = g.d / 2, sx = g.x > 0 ? 1 : -1;
+        face(0, yShaft0, g.h, gd, 'x', sx, gw, gd, g.x, g.z);
+        face(0, yShaft0, g.h, gw, 'z', +1, gw, gd, g.x, g.z);
+        face(0, yShaft0, g.h, gw, 'z', -1, gw, gd, g.x, g.z);
       });
 
       const N = places.length;
@@ -520,9 +557,9 @@
     function frameTo(radius, phi, theta) {
       orbit.radius = radius; orbit.phi = phi; if (theta != null) orbit.theta = theta; applyCamera();
     }
-    const frameCity = () => frameTo(400, 1.30, orbit.theta);
-    const frameTower = () => frameTo(230, 1.40, orbit.theta);
-    const reset = () => { autoRotate = !reduce; frameTo(300, 1.38, -0.6); };
+    const frameCity = () => frameTo(560, 1.30, orbit.theta);
+    const frameTower = () => frameTo(280, 1.40, orbit.theta);
+    const reset = () => { autoRotate = !reduce; frameTo(450, 1.38, -0.6); };
     const zoom = f => { orbit.radius = Math.min(R_MAX, Math.max(R_MIN, orbit.radius / f)); applyCamera(); };
     const toggleAutoRotate = () => { autoRotate = !autoRotate; return autoRotate; };
 
